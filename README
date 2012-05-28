@@ -1,0 +1,13 @@
+benthos : An Open-Source Dive Log Application
+---------------------------------------------
+
+Author: Jonathan Krauss
+E-Mail: jkrauss@asymworks.com
+
+Benthos is an open-source dive logging application modeled on MacDive but
+built to run on Linux and Windows.  Benthos leverages two shared libraries to
+provide logbook access (benthos-logbook) as well as dive computer interface 
+(benthos-dc).  Both libraries are released independently under a BSD license
+for third party integration.
+
+This code is released under the GPL Version 2
