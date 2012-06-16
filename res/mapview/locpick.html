@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+    <style type="text/css">
+      html { height: 100% }
+      body { height: 100%; margin: 0; padding: 0 }
+      #map_canvas { height: 100% }
+    </style>
+    <script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?key=AIzaSyAhAK_jBzSPHtc26BVAsoUuiFoXeDRSW60&sensor=false"></script>
+    <script type="text/javascript">
+    
+		//! Globals
+		var _pos = new google.maps.LatLng(0, 0);
+		var _map = null;
+		var _mkr = null;
+
+		//! Geocoder Object
+		_gc = new google.maps.Geocoder()
+
+		//! Move the Marker
+		function positionMarker(latLng)
+		{
+			_pos = latLng;
+			_mkr.setPosition(latLng);
+			_map.panTo(latLng);
+		}
+
+		//! Set the Position
+		function setPosition(lat, lon)
+		{
+			positionMarker(new google.maps.LatLng(lat, lon));
+		}
+
+		//! Update the Position
+		function updatePosition()
+		{
+			_pos = _mkr.getPosition();
+			MapLocationEditor._setPosition(_pos.lat(), _pos.lng());
+		}
+
+		//! Resize the Map Object
+		function resize()
+		{
+			google.maps.event.trigger(_map, 'resize');
+			_map.panTo(_pos)
+		}
+		
+		function initialize() 
+		{
+			_map_opts = {
+	  	  		zoom: 10,
+	  			center: _pos,
+	  			mapTypeId: google.maps.MapTypeId.ROADMAP,
+	  			streetViewControl: false
+	  	  	};
+			_map = new google.maps.Map(document.getElementById("map_canvas"), _map_opts);
+			_mkr_opts = {
+				position: _pos,
+				draggable: true
+			};
+			_mkr = new google.maps.Marker(_mkr_opts);
+	    	_mkr.setMap(_map);
+	    	
+	    	google.maps.event.addListener(_map, 'dblclick', function(event){
+				positionMarker(event.latLng);
+				updatePosition();
+			});
+	    	google.maps.event.addListener(_mkr, 'dragend', function(event){
+				updatePosition();
+	        });
+	    	
+	    	MapLocationEditor._mapLoaded();
+		}
+		
+		//! Search for a Location
+	  	function geocode(locname)
+	  	{
+	  		_gc.geocode({address: locname}, function(result, status){
+				if (status != google.maps.GeocoderStatus.OK) { return; }
+				var g = result[0].geometry;
+				if (! g) { return; }
+
+				_map.fitBounds(g.viewport);
+				positionMarker(g.location);
+				updatePosition();
+			});
+	  	}
+		
+    </script>
+  </head>
+  <body onload="initialize()">
+    <div id="map_canvas" style="width:100%; height:100%"></div>
+  </body>
+</html>

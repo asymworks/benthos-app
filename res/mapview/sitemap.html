@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+    <style type="text/css">
+      html { height: 100% }
+      body { height: 100%; margin: 0px; padding: 0px }
+      #map_canvas { height: 100% }
+      h1 { font-size: 100%; font-weight: bold; }
+      h2 { font-size: 80% }
+      div#rating { background-image: url(qrc:/icons/star.png); background-repeat: repeat-x; display: block; }
+      div#place img { float: right }
+      p { font-size: 80% }
+	</style>
+    <script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?key=AIzaSyAhAK_jBzSPHtc26BVAsoUuiFoXeDRSW60&sensor=false"></script>
+    <script type="text/javascript" src="qrc:/mapview/markerclusterer.js"></script>
+    <script type="text/javascript">
+
+//! Globals
+var _pos = new google.maps.LatLng(0, 0);
+var _map = null;
+var _mkrs = [];
+var _nfoW = null;
+
+//! Resize the Map Object
+function resize()
+{
+	google.maps.event.trigger(_map, 'resize');
+}
+
+//! Initialize the Map Object
+function initialize()
+{
+	_map_opts = {
+	  	zoom: 9,
+		center: _pos,
+		mapTypeId: google.maps.MapTypeId.SATELLITE,
+		streetViewControl: false
+	};
+	_map = new google.maps.Map(document.getElementById("map_canvas"), _map_opts);
+	_mc = new MarkerClusterer(_map, [], {maxZoom: 9});
+	_nfoW = new google.maps.InfoWindow();
+	
+	google.maps.event.addListener(_map, 'tilesloaded', tilesLoaded);
+	
+	google.maps.event.addListener(_map, 'bounds_changed', boundsChanged);
+	google.maps.event.addListener(_map, 'center_changed', centerChanged);
+	google.maps.event.addListener(_map, 'heading_changed', headingChanged);
+	google.maps.event.addListener(_map, 'maptypeid_changed', typeIdChanged);
+	google.maps.event.addListener(_map, 'tilt_changed', tiltChanged);
+	google.maps.event.addListener(_map, 'zoom_changed', zoomChanged);
+	
+	MapView._mapLoaded();
+}
+
+// Callback when Tiles are Loaded
+function tilesLoaded()
+{
+	MapView._tilesLoaded();
+}
+
+// Callback when Bounds Change
+function boundsChanged()
+{
+	b = _map.getBounds();
+	MapView._mapBoundsChanged(
+		b.getNorthEast().lat(), 
+		b.getNorthEast().lng(), 
+		b.getSouthWest().lat(),
+		b.getSouthWest().lng());
+}
+
+// Set the Map Bounds
+function setBounds(latNE, lngNE, latSW, lngSW)
+{
+	b = new google.maps.LatLngBounds(
+		new google.maps.LatLng(latNE, lngNE), 
+		new google.maps.LatLng(latSW, lngSW));
+	_map.panToBounds(b);
+}
+
+// Callback when Center Changes
+function centerChanged()
+{
+	c = _map.getCenter();
+	MapView._mapCenterChanged(c.lat(), c.lng());
+}
+
+// Set the Map Center
+function setCenter(lat, lng)
+{
+	c = new google.maps.LatLng(lat, lng);
+	_map.setCenter(c);
+}
+
+// Callback when Heading Changes
+function headingChanged()
+{
+	h = _map.getHeading();
+	MapView._mapHeadingChanged(h);
+}
+
+// Set the Map Heading
+function setHeading(hdg)
+{
+	_map.setHeading(hdg);
+}
+
+// Callback when Type Id Changes
+function typeIdChanged()
+{
+	i = _map.getMapTypeId().toString();
+	MapView._mapTypeIdChanged(i);
+}
+
+// Set the Map Type Id
+function setTypeId(id)
+{
+	_map.setMapTypeId(id);
+}
+
+// Callback when Tilt Changes
+function tiltChanged()
+{
+	t = _map.getTilt();
+	MapView._mapTiltChanged(t);
+}
+
+// Set the Map Tilt
+function setTilt(t)
+{
+	_map.setTilt(t);
+}
+
+// Callback when Zoom Changes
+function zoomChanged()
+{
+	z = _map.getZoom();
+	MapView._mapZoomChanged(z);
+}
+
+// Set the Map Zoom
+function setZoom(z)
+{
+	_map.setZoom(z);
+	//NB: Google Maps API throws an error here - no code may execute past this
+	// point using QtWebKit 
+}
+
+// Reload sites
+function reloadSites(sites)
+{
+	_mkrs = [];
+	_sites = JSON.parse(sites);
+	
+	var i, ll, mkr
+	for (i in _sites)
+	{
+		s = _sites[i];	
+		ll = new google.maps.LatLng(s.lat, s.lng);
+		
+		mkr = new google.maps.Marker({position: ll});
+		mkr.setTitle(s.site);
+		
+		google.maps.event.addListener(mkr, 'click', (function(marker, site) { 
+			return function() { 
+				_nfoW.setContent('<h1>' + site.site + '</h1>' +
+					'<div id="rating" style="width: ' + site.rating * 14 + 'px">&nbsp</div>' +
+					'<div id="place"><h2>' + site.place + '<br />' + site.country + '</h2><img src="qrc:/flags/' + site.code + '.png" /></place>' +
+					'<p>' + site.ndives + ' Dives Here</p>');
+				_nfoW.open(_map, marker);
+			}
+		})(mkr, s));
+		
+		_mkrs.push(mkr);
+	}
+	
+	_mc.clearMarkers();
+	_mc.addMarkers(_mkrs);
+}
+
+    </script>
+  </head>
+  <body onload="initialize()">
+    <div id="map_canvas" style="width:100%; height:100%"></div>
+  </body>
+</html>

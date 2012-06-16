@@ -1,0 +1,25 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource>
+    <file>icons/calendar.png</file>
+	<file>icons/cf-view.png</file>
+	<file>icons/clear.png</file>
+	<file>icons/config.png</file>
+	<file>icons/detail.png</file>
+	<file>icons/globe.png</file>
+	<file>icons/list-view.png</file>
+	<file>icons/map-view.png</file>
+	<file>icons/navtree-branch-closed.png</file>
+	<file>icons/navtree-branch-open.png</file>
+	<file>icons/search.png</file>
+	<file>icons/star.png</file>
+	<file>icons/star-sm.png</file>
+	<file>icons/star-blue.png</file>
+	<file>icons/star-dot.png</file>
+	<file>icons/stat-view.png</file>
+	<file>icons/tile-view.png</file>
+	
+	<file>icons/reefnet.ico</file>
+	<file>icons/scubapro.ico</file>
+	<file>icons/uwatec.ico</file>
+</qresource>
+</RCC>
