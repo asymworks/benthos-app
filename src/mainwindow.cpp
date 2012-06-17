@@ -37,11 +37,16 @@
 #include "util/qticonloader.hpp"
 #include "util/units.hpp"
 
-#include "mvf/models/dive_model.hpp"
-#include "mvf/models/site_model.hpp"
+#include "dialogs/modeladddialog.hpp"
+#include "dialogs/modeleditdialog.hpp"
 
+#include "mvf/models/dive_model.hpp"
 #include "mvf/views/dive_stackedview.hpp"
+#include "mvf/views/dive_editpanel.hpp"
+
+#include "mvf/models/site_model.hpp"
 #include "mvf/views/site_stackedview.hpp"
+#include "mvf/views/site_editpanel.hpp"
 
 MainWindow::MainWindow(QWidget * parent)
 	: QMainWindow(parent), m_Logbook(), m_LogbookName("None"), m_LogbookPath()
@@ -70,6 +75,74 @@ void MainWindow::actCloseLogbookTriggered()
 
 void MainWindow::actConfigUnitsTriggered()
 {
+}
+
+void MainWindow::actNewDiveTriggered()
+{
+	DiveModel mdl;
+	Dive::Ptr dv(new Dive);
+
+	// Setup the Temporary Model
+	std::vector<Dive::Ptr> v;
+	v.push_back(dv);
+	mdl.resetFromList(v);
+
+	// Show the Editor
+	IModelEditPanel * pnl = new DiveEditPanel();
+	ModelAddDialog d(& mdl, pnl, m_Logbook);
+	d.exec();
+
+	if (d.result() == QDialog::Accepted)
+	{
+		//FIXME: This belongs within ModelAddDialog so if something fails
+		// the dialog doesn't close and allows the user to fix it.
+		try
+		{
+			d.submit();
+
+			m_Logbook->session()->add(dv);
+			m_Logbook->session()->commit();
+
+			updateView();
+		}
+		catch (std::exception & e)
+		{
+			fprintf(stderr, "%s\n", e.what());
+		}
+	}
+}
+
+void MainWindow::actNewDiveSiteTriggered()
+{
+	DiveSiteModel mdl;
+	DiveSite::Ptr ds(new DiveSite);
+
+	// Setup the Temporary Model
+	std::vector<DiveSite::Ptr> v;
+	v.push_back(ds);
+	mdl.resetFromList(v);
+
+	// Show the Editor
+	IModelEditPanel * pnl = new SiteEditPanel();
+	ModelAddDialog d(& mdl, pnl, m_Logbook);
+	d.exec();
+
+	if (d.result() == QDialog::Accepted)
+	{
+		try
+		{
+			d.submit();
+
+			m_Logbook->session()->add(ds);
+			m_Logbook->session()->commit();
+
+			updateView();
+		}
+		catch (std::exception & e)
+		{
+			fprintf(stderr, "%s\n", e.what());
+		}
+	}
 }
 
 void MainWindow::actNewLogbookTriggered()

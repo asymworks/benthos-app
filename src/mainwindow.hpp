@@ -123,6 +123,9 @@ private slots:
 
 	void actViewDetailsTriggered();
 
+	void actNewDiveTriggered();
+	void actNewDiveSiteTriggered();
+
 	void navTreeSelectionChanged(const QModelIndex &, const QModelIndex &);
 	void txtFilterChanged(const QString &);
 	void viewModeChanged(int);
