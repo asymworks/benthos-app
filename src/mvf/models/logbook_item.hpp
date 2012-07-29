@@ -198,6 +198,39 @@ private:
 };
 
 /**
+ * @brief Item Source Node Item
+ *
+ * Item Source Nodes have a built-in method to fetch a single item from the
+ * database, which is provided in the constructor.
+ */
+template <class T>
+class ItemSourceItem: public LogbookModelItem
+{
+public:
+
+	//! Class Constructor
+	ItemSourceItem(typename T::Ptr item, const QString & title, const QImage & icon = QImage(), int type = DeviceItem)
+		: LogbookModelItem(title, icon, type), m_item(item)
+	{
+	}
+
+	//! Class Destructor
+	virtual ~ItemSourceItem()
+	{
+	}
+
+	//! @return Item
+	virtual typename T::Ptr getItem() const
+	{
+		return m_item;
+	}
+
+private:
+	typename T::Ptr		m_item;
+
+};
+
+/**
  * @brief Country Node Item
  *
  * Data source node item which is associated with a country.  This allows the

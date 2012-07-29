@@ -43,5 +43,8 @@ set(BENTHOS_ORG_DOMAIN asymworks.com)
 set(BENTHOS_DB_CREATOR ${BENTHOS_APP_NAME})
 set(BENTHOS_DB_VERSION 1)
 
+# Directory Information
+SET(BENTHOS_DATADIR		"${CMAKE_INSTALL_PREFIX}/share/benthos")
+
 # Run Subdirectories
 add_subdirectory( src )

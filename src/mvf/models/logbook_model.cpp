@@ -363,7 +363,8 @@ void LogbookModel::setLogbook(Logbook::Ptr logbook)
 		if ((* it2)->manufacturer())
 			mfg = QString::fromStdString((* it2)->manufacturer().get());
 
-		m_items[3]->append(LogbookModelItem::Ptr(new LogbookModelItem(
+		m_items[3]->append(LogbookModelItem::Ptr(new ItemSourceItem<DiveComputer>(
+			* it2,
 			QString::fromStdString((* it2)->name().get()),
 			mfg.isEmpty() ? QImage() : QImage(QString(":/icons/%1.ico").arg(mfg.toLower())),
 			LogbookModelItem::DeviceItem

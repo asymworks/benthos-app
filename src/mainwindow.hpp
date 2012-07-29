@@ -46,6 +46,8 @@ using namespace benthos::logbook;
 #include "mvf/models/logbook_item.hpp"
 #include "mvf/models/logbook_model.hpp"
 
+#include "mvf/views/computer_view.hpp"
+
 /**
  * @brief MainWindow Class
  *
@@ -160,6 +162,7 @@ private:
 
 	StackedView *			m_svDives;
 	StackedView *			m_svSites;
+	ComputerView *			m_dvComputer;
 	QWidget *				m_blankWidget;
 
 	SearchEdit *			m_txtFilter;

@@ -31,7 +31,6 @@ const QString NavTree::stylesheet = QString(R"END(
 QTreeView
 {
     background-color: white;
-    border-style: none;
 }
 
 QTreeView::item
@@ -64,6 +63,7 @@ QTreeView::branch:open:has-children:has-siblings
 NavTree::NavTree(QWidget * parent)
 	: QTreeView(parent)
 {
+	setFrameStyle(QFrame::Panel | QFrame::Sunken);
 	setHeaderHidden(true);
 	setItemDelegate(new LogbookDelegate(this));
 	setItemsExpandable(false);

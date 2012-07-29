@@ -50,6 +50,7 @@ set( BENTHOS_SRCS
 	mvf/models/logbook_item.cpp
 	mvf/models/logbook_model.cpp
 	mvf/models/site_model.cpp
+	mvf/views/computer_view.cpp
 	mvf/views/dive_editpanel.cpp
 	mvf/views/dive_stackedview.cpp
 	mvf/views/site_editpanel.cpp
@@ -75,6 +76,7 @@ set( BENTHOS_MOC_HDRS
 	dialogs/modeladddialog.hpp
 	dialogs/modeleditdialog.hpp
 	mvf/models.hpp
+	mvf/views/computer_view.hpp
 	mvf/views/dive_editpanel.hpp
 	mvf/views/dive_stackedview.hpp
 	mvf/views/site_editpanel.hpp
@@ -85,6 +87,7 @@ set( BENTHOS_MOC_HDRS
 # Resource Files
 set( BENTHOS_RCS
 	${CMAKE_SOURCE_DIR}/res/flags.qrc
+	${CMAKE_SOURCE_DIR}/res/graphics.qrc
 	${CMAKE_SOURCE_DIR}/res/icons.qrc
 	${CMAKE_SOURCE_DIR}/res/mapview.qrc
 )

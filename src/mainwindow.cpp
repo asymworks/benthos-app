@@ -392,11 +392,13 @@ void MainWindow::createLayout()
 
 	m_svDives = new DiveStack(this);
 	m_svSites = new DiveSiteStack(this);
+	m_dvComputer = new ComputerView(this);
 	m_blankWidget = new QWidget(this);
 
 	m_viewStack = new QStackedWidget(this);
 	m_viewStack->addWidget(m_svDives);
 	m_viewStack->addWidget(m_svSites);
+	m_viewStack->addWidget(m_dvComputer);
 	m_viewStack->addWidget(m_blankWidget);
 
 	QGridLayout * gbox = new QGridLayout;
@@ -505,6 +507,22 @@ void MainWindow::navTreeSelectionChanged(const QModelIndex & selected, const QMo
 		mdl->resetFromList(dsi->getItems(m_Logbook->session()));
 		m_viewStack->setCurrentWidget(m_svSites);
 
+		break;
+	}
+
+	case LogbookModelItem::DeviceItem:
+	{
+		boost::shared_ptr<ItemSourceItem<DiveComputer> > isi = boost::dynamic_pointer_cast<ItemSourceItem<DiveComputer> >(sel_item);
+		if (! isi)
+			throw std::runtime_error("Navigation Item with type DeviceItem must inherit from ItemSourceItem<DiveComputer>");
+
+		DiveComputer::Ptr dc = isi->getItem();
+
+		if (! dc)
+			throw std::runtime_error("Item is NULL in ItemSourceItem");
+
+		m_viewStack->setCurrentWidget(m_dvComputer);
+		m_dvComputer->setComputer(dc);
 		break;
 	}
 
