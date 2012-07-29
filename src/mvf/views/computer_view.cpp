@@ -20,10 +20,16 @@
  * 02110-1301, USA.
  */
 
+#include <ctime>
+
 #include <QDateTime>
 #include <QHBoxLayout>
 #include <QSettings>
+#include <QThreadPool>
 #include <QVBoxLayout>
+
+#include "dialogs/transferdialog.hpp"
+#include "workers/transferworker.hpp"
 
 #include "computer_view.hpp"
 
@@ -39,6 +45,39 @@ ComputerView::ComputerView(QWidget * parent)
 
 ComputerView::~ComputerView()
 {
+}
+
+void ComputerView::btnTransferClicked()
+{
+	if (! m_dc)
+		return;
+
+	// Create the Transfer Worker
+	QThreadPool * tp = QThreadPool::globalInstance();
+	TransferWorker * worker = new TransferWorker(m_dc, m_dc->session(), true, false);
+
+	// Create the Progress Dialog
+	TransferDialog * dialog = new TransferDialog(this);
+
+	// Connect Signals/Slots
+	connect(worker, SIGNAL(finished()), dialog, SLOT(xfrFinished()), Qt::QueuedConnection);
+	connect(worker, SIGNAL(progress(unsigned long)), dialog, SLOT(xfrProgress(unsigned long)), Qt::QueuedConnection);
+	connect(worker, SIGNAL(started(unsigned long)), dialog, SLOT(xfrStarted(unsigned long)), Qt::QueuedConnection);
+	connect(worker, SIGNAL(status(const QString &)), dialog, SLOT(xfrStatus(const QString &)), Qt::QueuedConnection);
+	connect(worker, SIGNAL(transferError(const QString &)), dialog, SLOT(xfrError(const QString &)), Qt::QueuedConnection);
+
+	connect(dialog, SIGNAL(cancelled()), worker, SLOT(cancel()), Qt::QueuedConnection);
+
+	// Run the Transfer
+	tp->start(worker);
+	if (dialog->exec() == QDialog::Accepted)
+	{
+		m_dc->setLastTransfer(time(NULL));
+		m_dc->session()->add(m_dc);
+		m_dc->session()->commit();
+
+		setComputer(m_dc);
+	}
 }
 
 DiveComputer::Ptr ComputerView::computer() const
@@ -106,6 +145,8 @@ QFrame * ComputerView::createInfoLayout()
 	m_btnTransfer = new QPushButton(tr("Transfer Dives"));
 	m_btnSettings = new QPushButton(tr("Computer Settings"));
 	m_btnSettings->setEnabled(false);
+
+	connect(m_btnTransfer, SIGNAL(clicked()), this, SLOT(btnTransferClicked()));
 
 	// Transfer Label
 	QLabel * lblTransfer = new QLabel(tr("Use the 'Transfer Dives' button to transfer dives from your dive computer into Benthos."));

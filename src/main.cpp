@@ -21,13 +21,18 @@
  */
 
 #include <QApplication>
+#include <QMetaType>
 
 #include <benthos/logbook/logging.hpp>
+#include <benthos/logbook/profile.hpp>
 
 #include "config.hpp"
 #include "mainwindow.hpp"
 
 using namespace benthos::logbook;
+
+// Declare Custom MetaTypes
+Q_DECLARE_METATYPE(Profile::Ptr)
 
 class LevelFilter: public logging::log_filter
 {
@@ -102,12 +107,17 @@ int main(int argc, char **  argv)
 	init_logging();
 	logging::getLogger("main")->debug("Starting benthos");
 
+	// Setup the Application
 	QApplication app(argc, argv);
 	app.setApplicationName(BENTHOS_APP_NAME);
 	app.setApplicationVersion(BENTHOS_APP_VERSION);
 	app.setOrganizationDomain(BENTHOS_ORG_DOMAIN);
 	app.setOrganizationName(BENTHOS_ORG_NAME);
 
+	// Register Custom Metatypes
+	qRegisterMetaType<Profile::Ptr>();
+
+	// Load Main Window and Execute
 	MainWindow * w = new MainWindow;
 	w->show();
 

@@ -38,6 +38,7 @@
 #include <QString>
 
 #include <benthos/logbook/dive_computer.hpp>
+#include <benthos/logbook/profile.hpp>
 
 using namespace benthos::logbook;
 
@@ -66,6 +67,9 @@ public:
 
 	//! @param[in] Dive Computer
 	void setComputer(DiveComputer::Ptr);
+
+protected slots:
+	void btnTransferClicked();
 
 protected:
 

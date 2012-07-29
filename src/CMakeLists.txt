@@ -39,6 +39,7 @@ set( BENTHOS_SRCS
 	controls/tileviewsorter.cpp
 	dialogs/modeladddialog.cpp
 	dialogs/modeleditdialog.cpp
+	dialogs/transferdialog.cpp
 	mvf/countrymodel.cpp
 	mvf/delegates.cpp
 	mvf/modelcolumn.cpp
@@ -58,6 +59,7 @@ set( BENTHOS_SRCS
 	mvf/views/site_stackedview.cpp
 	util/qticonloader.cpp
 	util/units.cpp
+	workers/transferworker.cpp
 )
 
 # C/C++ Header Files for moc
@@ -75,6 +77,7 @@ set( BENTHOS_MOC_HDRS
 	controls/tileviewsorter.hpp
 	dialogs/modeladddialog.hpp
 	dialogs/modeleditdialog.hpp
+	dialogs/transferdialog.hpp
 	mvf/models.hpp
 	mvf/views/computer_view.hpp
 	mvf/views/dive_editpanel.hpp
@@ -82,6 +85,7 @@ set( BENTHOS_MOC_HDRS
 	mvf/views/site_editpanel.hpp
 	mvf/views/site_mapview.hpp
 	mvf/views/site_stackedview.hpp
+	workers/transferworker.hpp
 )
 
 # Resource Files
