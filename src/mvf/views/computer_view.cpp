@@ -52,9 +52,12 @@ void ComputerView::btnTransferClicked()
 	if (! m_dc)
 		return;
 
+	bool checkSN = m_chkCheckSN->isChecked();
+	bool updateToken = m_chkUpdateToken->isChecked();
+
 	// Create the Transfer Worker
 	QThreadPool * tp = QThreadPool::globalInstance();
-	TransferWorker * worker = new TransferWorker(m_dc, m_dc->session());
+	TransferWorker * worker = new TransferWorker(m_dc, m_dc->session(), checkSN, updateToken);
 
 	// Create the Progress Dialog
 	TransferDialog * dialog = new TransferDialog(this);
@@ -73,6 +76,7 @@ void ComputerView::btnTransferClicked()
 	tp->start(worker);
 	if (dialog->exec() == QDialog::Accepted)
 	{
+		//FIXME: Be less dumb when merging dives
 		std::vector<Profile::Ptr> dives = dialog->dives();
 		std::vector<Profile::Ptr>::iterator it;
 		for (it = dives.begin(); it != dives.end(); it++)
@@ -176,7 +180,6 @@ QFrame * ComputerView::createInfoLayout()
 	vline->setFrameStyle(QFrame::VLine | QFrame::Sunken);
 
 	QHBoxLayout * hbox2 = new QHBoxLayout;
-	hbox2->setContentsMargins(16, 8, 16, 8);
 	hbox2->addWidget(m_lblImage);
 	hbox2->addWidget(vline);
 	hbox2->addLayout(gbox);
@@ -207,6 +210,12 @@ QFrame * ComputerView::createOptionsLayout()
 
 	m_lblDriver = new QLabel;
 	m_lblDevice = new QLabel;
+
+	m_chkCheckSN = new QCheckBox(tr("Verify Serial Number before Transfer"));
+	m_chkUpdateToken = new QCheckBox(tr("Update Token after Transfer"));
+
+	connect(m_chkCheckSN, SIGNAL(clicked()), this, SLOT(updateSettings()));
+	connect(m_chkUpdateToken, SIGNAL(clicked()), this, SLOT(updateSettings()));
 
 	// Label/Value Grid Box
 	QGridLayout * gbox = new QGridLayout;
@@ -246,6 +255,9 @@ QFrame * ComputerView::createOptionsLayout()
 	vbox3->addLayout(hbox);
 	vbox3->addSpacing(8);
 	vbox3->addWidget(lblConfigText);
+	vbox3->addSpacing(8);
+	vbox3->addWidget(m_chkCheckSN);
+	vbox3->addWidget(m_chkUpdateToken);
 
 	// Create the Frame
 	QFrame * fOptions = new QFrame;
@@ -303,6 +315,17 @@ void ComputerView::setComputer(DiveComputer::Ptr value)
 
 	m_dc = value;
 
+	if (! m_dc)
+		return;
+
+	s.beginGroup(QString("DiveComputer-%1").arg(m_dc->id()));
+	QVariant checksn = s.value("checksn", Qt::Checked);
+	QVariant update = s.value("update", Qt::Checked);
+	s.endGroup();
+
+	m_chkCheckSN->setCheckState((Qt::CheckState)checksn.toInt());
+	m_chkUpdateToken->setCheckState((Qt::CheckState)update.toInt());
+
 	if (! m_dc->name())
 		m_lblName->clear();
 	else
@@ -344,5 +367,17 @@ void ComputerView::setComputer(DiveComputer::Ptr value)
 	else
 		m_lblSWVersion->setText(QString::fromStdString(m_dc->sw_version().get()));
 	*/
+}
+
+void ComputerView::updateSettings()
+{
+	if (! m_dc)
+		return;
+
+	QSettings s;
+	s.beginGroup(QString("DiveComputer-%1").arg(m_dc->id()));
+	s.setValue("checksn", m_chkCheckSN->checkState());
+	s.setValue("update", m_chkUpdateToken->checkState());
+	s.endGroup();
 }
 

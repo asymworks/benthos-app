@@ -31,6 +31,7 @@
 
 #include <string>
 
+#include <QCheckBox>
 #include <QFrame>
 #include <QLabel>
 #include <QProgressBar>
@@ -70,6 +71,7 @@ public:
 
 protected slots:
 	void btnTransferClicked();
+	void updateSettings();
 
 protected:
 
@@ -100,6 +102,9 @@ private:
 
 	QPushButton *				m_btnTransfer;
 	QPushButton *				m_btnSettings;
+
+	QCheckBox *					m_chkCheckSN;
+	QCheckBox *					m_chkUpdateToken;
 
 	QPushButton *				m_btnConnection;
 
