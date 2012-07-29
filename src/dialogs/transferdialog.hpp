@@ -29,10 +29,16 @@
  * @author Jonathan Krauss <jkrauss@asymworks.com>
  */
 
+#include <vector>
+
 #include <QDialog>
 #include <QLabel>
 #include <QProgressBar>
 #include <QRunnable>
+
+#include <benthos/logbook/profile.hpp>
+
+using namespace benthos::logbook;
 
 /**
  * @brief Dive Computer Transfer Dialog
@@ -51,7 +57,13 @@ public:
 	//! Class Destructor
 	virtual ~TransferDialog();
 
+public:
+
+	//! @return List of Transferred Dives
+	std::vector<Profile::Ptr> dives() const;
+
 public slots:
+	void xfrDive(Profile::Ptr);
 	void xfrError(const QString &);
 	void xfrFinished();
 	void xfrProgress(unsigned long);
@@ -65,8 +77,9 @@ signals:
 	void cancelled();
 
 private:
-	QLabel *				m_lblStatus;
-	QProgressBar *			m_pbTransfer;
+	QLabel *					m_lblStatus;
+	QProgressBar *				m_pbTransfer;
+	std::vector<Profile::Ptr>	m_dives;
 
 };
 

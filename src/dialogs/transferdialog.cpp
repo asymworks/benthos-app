@@ -29,7 +29,7 @@
 #include "transferdialog.hpp"
 
 TransferDialog::TransferDialog(QWidget * parent)
-	: QDialog(parent), m_lblStatus(0), m_pbTransfer(0)
+	: QDialog(parent), m_lblStatus(0), m_pbTransfer(0), m_dives()
 {
 	m_lblStatus = new QLabel;
 	m_pbTransfer = new QProgressBar;
@@ -59,6 +59,16 @@ TransferDialog::~TransferDialog()
 void TransferDialog::btnCancelClicked()
 {
 	emit cancelled();
+}
+
+std::vector<Profile::Ptr> TransferDialog::dives() const
+{
+	return m_dives;
+}
+
+void TransferDialog::xfrDive(Profile::Ptr profile)
+{
+	m_dives.push_back(profile);
 }
 
 void TransferDialog::xfrError(const QString & msg)

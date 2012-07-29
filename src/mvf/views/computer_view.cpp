@@ -54,13 +54,14 @@ void ComputerView::btnTransferClicked()
 
 	// Create the Transfer Worker
 	QThreadPool * tp = QThreadPool::globalInstance();
-	TransferWorker * worker = new TransferWorker(m_dc, m_dc->session(), true, false);
+	TransferWorker * worker = new TransferWorker(m_dc, m_dc->session());
 
 	// Create the Progress Dialog
 	TransferDialog * dialog = new TransferDialog(this);
 
 	// Connect Signals/Slots
 	connect(worker, SIGNAL(finished()), dialog, SLOT(xfrFinished()), Qt::QueuedConnection);
+	connect(worker, SIGNAL(parsedDive(Profile::Ptr)), dialog, SLOT(xfrDive(Profile::Ptr)), Qt::QueuedConnection);
 	connect(worker, SIGNAL(progress(unsigned long)), dialog, SLOT(xfrProgress(unsigned long)), Qt::QueuedConnection);
 	connect(worker, SIGNAL(started(unsigned long)), dialog, SLOT(xfrStarted(unsigned long)), Qt::QueuedConnection);
 	connect(worker, SIGNAL(status(const QString &)), dialog, SLOT(xfrStatus(const QString &)), Qt::QueuedConnection);
@@ -72,6 +73,11 @@ void ComputerView::btnTransferClicked()
 	tp->start(worker);
 	if (dialog->exec() == QDialog::Accepted)
 	{
+		std::vector<Profile::Ptr> dives = dialog->dives();
+		std::vector<Profile::Ptr>::iterator it;
+		for (it = dives.begin(); it != dives.end(); it++)
+			m_dc->session()->add(* it);
+
 		m_dc->setLastTransfer(time(NULL));
 		m_dc->session()->add(m_dc);
 		m_dc->session()->commit();
