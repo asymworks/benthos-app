@@ -75,6 +75,9 @@ protected slots:
 
 protected:
 
+	//! @return Image Path for Dive Computer
+	static std::string imagePath(DiveComputer::Ptr);
+
 	//! Create View for Basic Information
 	QFrame * createInfoLayout();
 

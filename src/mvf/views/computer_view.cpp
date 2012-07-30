@@ -20,7 +20,9 @@
  * 02110-1301, USA.
  */
 
+#include <algorithm>
 #include <ctime>
+#include <string>
 
 #include <QDateTime>
 #include <QHBoxLayout>
@@ -28,10 +30,13 @@
 #include <QThreadPool>
 #include <QVBoxLayout>
 
+#include <boost/filesystem.hpp>
+
 #include "dialogs/transferdialog.hpp"
 #include "workers/transferworker.hpp"
 
 #include "computer_view.hpp"
+#include "config.hpp"
 
 ComputerView::ComputerView(QWidget * parent)
 	: QFrame(parent), m_dc()
@@ -306,6 +311,29 @@ void ComputerView::createLayout()
 	setLayout(hbox);
 }
 
+std::string ComputerView::imagePath(DiveComputer::Ptr dc)
+{
+	boost::filesystem::path bPath(BENTHOS_DATADIR);
+	bPath /= "graphics";
+	bPath /= "dc";
+
+	std::string mfg(dc->manufacturer() ? dc->manufacturer().get() : "");
+	std::string mdl(dc->model() ? dc->model().get() : "");
+
+	// If Manufacturer or Model is missing, use default
+	if (mfg.empty() || mdl.empty())
+		return ":/graphics/dc-unknown.png";
+
+	// Construct File Name
+	std::replace(mfg.begin(), mfg.end(), ' ', '_');
+	std::replace(mdl.begin(), mdl.end(), ' ', '_');
+	bPath /= (mfg + "_" + mdl + ".png");
+
+	if (boost::filesystem::exists(bPath))
+		return bPath.native();
+	return ":/graphics/dc-unknown.png";
+}
+
 void ComputerView::setComputer(DiveComputer::Ptr value)
 {
 	QSettings s;
@@ -323,6 +351,7 @@ void ComputerView::setComputer(DiveComputer::Ptr value)
 	QVariant update = s.value("update", Qt::Checked);
 	s.endGroup();
 
+	m_lblImage->setPixmap(QPixmap(imagePath(m_dc).c_str()));
 	m_chkCheckSN->setCheckState((Qt::CheckState)checksn.toInt());
 	m_chkUpdateToken->setCheckState((Qt::CheckState)update.toInt());
 
@@ -335,14 +364,14 @@ void ComputerView::setComputer(DiveComputer::Ptr value)
 	m_lblDives->setText(QString("%1 dives").arg(m_dc->dives()->count()));
 
 	if (! m_dc->last_transfer())
-		m_lblLastXfr->clear();
+		m_lblLastXfr->setText(tr("Never"));
 	else
 		m_lblLastXfr->setText(QDateTime::fromTime_t(m_dc->last_transfer().get()).toString(fmt.toString()));
 
 	m_lblDriver->setText(QString::fromStdString(m_dc->driver()));
 
 	if (! m_dc->device())
-		m_lblDevice->clear();
+		m_lblDevice->setText(tr("<auto>"));
 	else
 		m_lblDevice->setText(QString::fromStdString(m_dc->device().get()));
 

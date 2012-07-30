@@ -471,6 +471,7 @@ void TransferWorker::run()
 	}
 
 	emit status(QString("Loaded driver '%1'").arg(QString::fromStdString(m_dc->driver())));
+	emit status(QString("Connecting to '%1'").arg(dcname));
 
 	// Connect to the Device
 	try

@@ -103,6 +103,13 @@ add_definitions( -Wall -g )
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.hpp.in ${CMAKE_CURRENT_BINARY_DIR}/config.hpp @ONLY)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
+# Boost Headers Required
+find_package( Boost 1.45 REQUIRED COMPONENTS filesystem system )
+
+include_directories(
+	${Boost_INCLUDE_DIR}
+)
+
 # Find liblogbook
 find_package(PkgConfig)
 if (NOT PKG_CONFIG_FOUND)
@@ -146,6 +153,7 @@ add_executable( benthos
 # Link Benthos
 target_link_libraries( benthos 
 	${QT_LIBRARIES} 
+	${Boost_LIBRARIES}
 	${BENTHOS_LOGBOOK_LDFLAGS} 
 	${BENTHOS_DC_LDFLAGS}
 )
