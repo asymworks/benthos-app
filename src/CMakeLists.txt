@@ -31,12 +31,15 @@ set( BENTHOS_SRCS
 	controls/maplocationeditor.cpp
 	controls/multicolumnlistview.cpp
 	controls/navtree.cpp
+	controls/propertygrid.cpp
 	controls/quantityedit.cpp
 	controls/ratingedit.cpp
 	controls/searchedit.cpp
 	controls/stackedview.cpp
 	controls/tileview.cpp
 	controls/tileviewsorter.cpp
+	controls/wizardcombobox.cpp
+	dialogs/driverparamsdialog.cpp
 	dialogs/modeladddialog.cpp
 	dialogs/modeleditdialog.cpp
 	dialogs/transferdialog.cpp
@@ -48,6 +51,7 @@ set( BENTHOS_SRCS
 	mvf/delegates/site_tiledelegate.cpp
 	mvf/delegates/tiledelegate.cpp
 	mvf/models/dive_model.cpp
+	mvf/models/driverparams_model.cpp
 	mvf/models/logbook_item.cpp
 	mvf/models/logbook_model.cpp
 	mvf/models/site_model.cpp
@@ -69,12 +73,15 @@ set( BENTHOS_MOC_HDRS
 	controls/maplocationeditor.hpp
 	controls/multicolumnlistview.hpp
 	controls/navtree.hpp
+	controls/propertygrid.hpp
 	controls/quantityedit.hpp
 	controls/ratingedit.hpp
 	controls/searchedit.hpp
 	controls/stackedview.hpp
 	controls/tileview.hpp
 	controls/tileviewsorter.hpp
+	controls/wizardcombobox.hpp
+	dialogs/driverparamsdialog.hpp
 	dialogs/modeladddialog.hpp
 	dialogs/modeleditdialog.hpp
 	dialogs/transferdialog.hpp

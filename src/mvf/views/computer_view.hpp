@@ -70,7 +70,9 @@ public:
 	void setComputer(DiveComputer::Ptr);
 
 protected slots:
+	void btnConnectionClicked();
 	void btnTransferClicked();
+
 	void updateSettings();
 
 protected:

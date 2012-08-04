@@ -32,11 +32,17 @@
 
 #include <boost/filesystem.hpp>
 
+#include <benthos/divecomputer/driverclass.hpp>
+#include <benthos/divecomputer/registry.hpp>
+
+#include "dialogs/driverparamsdialog.hpp"
 #include "dialogs/transferdialog.hpp"
 #include "workers/transferworker.hpp"
 
 #include "computer_view.hpp"
 #include "config.hpp"
+
+using namespace benthos::dc;
 
 ComputerView::ComputerView(QWidget * parent)
 	: QFrame(parent), m_dc()
@@ -50,6 +56,36 @@ ComputerView::ComputerView(QWidget * parent)
 
 ComputerView::~ComputerView()
 {
+}
+
+void ComputerView::btnConnectionClicked()
+{
+	if (! m_dc)
+		return;
+
+	// Find the Driver Class
+	PluginRegistry::Ptr reg = PluginRegistry::Instance();
+	DriverClass::Ptr dclass;
+	try
+	{
+		dclass = reg->loadDriver(m_dc->driver());
+	}
+	catch (std::exception & e)
+	{
+		throw std::runtime_error(QString("Failed to load driver '%1': %2")
+			.arg(QString::fromStdString(m_dc->driver()))
+			.arg(QString::fromStdString(e.what())).toStdString());
+		return;
+	}
+
+	// Show the Dialog
+	DriverParamsDialog * dialog = new DriverParamsDialog(dclass, m_dc->driver_args() ? m_dc->driver_args().get() : "");
+	if (dialog->exec() == QDialog::Accepted)
+	{
+		m_dc->setDriverArgs(dialog->param_string());
+		m_dc->session()->add(m_dc);
+		m_dc->session()->commit();
+	}
 }
 
 void ComputerView::btnTransferClicked()
@@ -217,7 +253,7 @@ QFrame * ComputerView::createOptionsLayout()
 	m_lblDevice = new QLabel;
 
 	m_chkCheckSN = new QCheckBox(tr("Verify Serial Number before Transfer"));
-	m_chkUpdateToken = new QCheckBox(tr("Update Token after Transfer"));
+	m_chkUpdateToken = new QCheckBox(tr("Only Download New Dives"));
 
 	connect(m_chkCheckSN, SIGNAL(clicked()), this, SLOT(updateSettings()));
 	connect(m_chkUpdateToken, SIGNAL(clicked()), this, SLOT(updateSettings()));
@@ -238,6 +274,8 @@ QFrame * ComputerView::createOptionsLayout()
 
 	// Connection Settings Button
 	m_btnConnection = new QPushButton(tr("Configure Connection"));
+
+	connect(m_btnConnection, SIGNAL(clicked()), this, SLOT(btnConnectionClicked()));
 
 	// Button Layout
 	QVBoxLayout * vbox2 = new QVBoxLayout;
