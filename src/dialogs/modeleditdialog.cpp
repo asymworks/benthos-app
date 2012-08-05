@@ -95,8 +95,6 @@ ModelEditDialog::~ModelEditDialog()
 
 void ModelEditDialog::closeEvent(QCloseEvent * event)
 {
-	//FIXME: Why is closeEvent not getting called?
-	printf("ModelEditDialog::closeEvent()\n");
 	m_mapper->submit();
 }
 
