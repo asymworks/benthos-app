@@ -42,33 +42,46 @@ DriverParamsModel::DriverParamsModel(DriverClass::Ptr cls, const std::string & a
 	{
 		if (! al.has_value(it->param_name))
 		{
-			// Add an empty Variant
 			m_values.push_back(QVariant());
-
 			continue;
 		}
 
 		switch (it->param_type)
 		{
 		case ptString:
-			m_values.push_back(QVariant(QString::fromStdString(al.read_string(it->param_name).get())));
+		{
+			boost::optional<std::string> v = al.read_string(it->param_name);
+			m_values.push_back(v.is_initialized() ? QVariant(QString::fromStdString(v.get())) : QVariant());
 			break;
+		}
 
 		case ptInt:
-			m_values.push_back(QVariant(al.read_integer(it->param_name).get()));
+		{
+			boost::optional<int32_t> v = al.read_integer(it->param_name);
+			m_values.push_back(v.is_initialized() ? QVariant(v.get()) : QVariant());
 			break;
+		}
 
 		case ptUInt:
-			m_values.push_back(QVariant(al.read_unsigned(it->param_name).get()));
+		{
+			boost::optional<uint32_t> v = al.read_unsigned(it->param_name);
+			m_values.push_back(v.is_initialized() ? QVariant(v.get()) : QVariant());
 			break;
+		}
 
 		case ptFloat:
-			m_values.push_back(QVariant(al.read_float(it->param_name).get()));
+		{
+			boost::optional<double> v = al.read_float(it->param_name);
+			m_values.push_back(v.is_initialized() ? QVariant(v.get()) : QVariant());
 			break;
+		}
 
 		case ptModel:
-			m_values.push_back(QVariant(al.read_integer(it->param_name).get()));
+		{
+			boost::optional<int32_t> v = al.read_integer(it->param_name);
+			m_values.push_back(v.is_initialized() ? QVariant(v.get()) : QVariant());
 			break;
+		}
 
 		default:
 			throw std::runtime_error("Unsupported Parameter Type for " + it->param_name);
@@ -108,6 +121,10 @@ QVariant DriverParamsModel::data(const QModelIndex & index, int role) const
 		{
 			return QVariant(QString::fromStdString(m_params[r].param_desc));
 		}
+		else if (role == Qt::UserRole + 1)
+		{
+			return QVariant(m_params[r].param_type);
+		}
 	}
 	else
 	{
@@ -116,6 +133,27 @@ QVariant DriverParamsModel::data(const QModelIndex & index, int role) const
 		{
 			if (m_values[r].isNull())
 				return defaultValue(r);
+
+			if (m_params[r].param_type == ptModel)
+			{
+				std::map<int, model_info_t>::const_iterator it = m_class->models().find(m_values[r].toInt());
+				if (it == m_class->models().end())
+					return QVariant();
+
+				if (role == Qt::DisplayRole)
+				{
+					std::string dname = it->second.model_name;
+					if (! it->second.manuf_name.empty())
+						dname = it->second.manuf_name + " " + dname;
+
+					return QVariant(QString::fromStdString(dname));
+				}
+				else
+				{
+					return QVariant(it->first);
+				}
+			}
+
 			return m_values[r];
 		}
 		else if (role == Qt::FontRole)
@@ -127,6 +165,14 @@ QVariant DriverParamsModel::data(const QModelIndex & index, int role) const
 				return QVariant(f);
 			}
 		}
+		else if (role == Qt::UserRole + 0)
+		{
+			return QVariant(QString::fromStdString(m_params[r].param_desc));
+		}
+		else if (role == Qt::UserRole + 1)
+		{
+			return QVariant(m_params[r].param_type);
+		}
 	}
 
 	return QVariant();
@@ -134,6 +180,9 @@ QVariant DriverParamsModel::data(const QModelIndex & index, int role) const
 
 QVariant DriverParamsModel::defaultValue(int row) const
 {
+	if (m_params[row].param_default.empty())
+		return QVariant();
+
 	std::string dummy = m_params[row].param_name + "=" + m_params[row].param_default;
 	ArgumentList al(dummy);
 
@@ -214,11 +263,14 @@ bool DriverParamsModel::setData(const QModelIndex & index, const QVariant & valu
 	return true;
 }
 
-std::string DriverParamsModel::toString() const
+std::string DriverParamsModel::toString(const std::string & skipParam) const
 {
 	std::string ret;
 	for (size_t i = 0; i < m_params.size(); i++)
 	{
+		if (m_params[i].param_name == skipParam)
+			continue;
+
 		if (! m_values[i].isNull())
 		{
 			if (! ret.empty())

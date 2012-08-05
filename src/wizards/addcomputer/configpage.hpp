@@ -20,62 +20,62 @@
  * 02110-1301, USA.
  */
 
-#ifndef DIVE_STACKEDVIEW_HPP_
-#define DIVE_STACKEDVIEW_HPP_
+#ifndef WIZARDS_ADDCOMPUTER_CONFIGPAGE_HPP_
+#define WIZARDS_ADDCOMPUTER_CONFIGPAGE_HPP_
 
 /**
- * @file src/mvf/dive_stackedview.hpp
- * @brief Stacked View for Dives
+ * @file src/wizards/addcomputer/configpage.hpp
+ * @brief Add Dive Computer Wizard Configuration Page
  * @author Jonathan Krauss <jkrauss@asymworks.com>
  */
 
-#include <QSortFilterProxyModel>
-#include <QWidget>
+#include <QLabel>
+#include <QLineEdit>
+#include <QWizardPage>
 
-#include <controls/stackedview.hpp>
+namespace wizards { namespace addcomputer {
 
 /**
- * DiveStack Widget
+ * @brief Add Computer Wizard Configuration Page
  *
- * Implements a Model-View Stack Widget for Dives.  The supported view
- * modes are list view, statistics view, and cover-flow view (upcoming).
+ * Shows the configuration page of the Add Computer wizard, which confirms the
+ * dive computer settings and allows the user to enter other information about
+ * the device.
  */
-class DiveStack: public StackedView
+class ConfigPage: public QWizardPage
 {
 	Q_OBJECT
 
 public:
 
 	//! Class Constructor
-	DiveStack(QWidget * parent = 0);
+	ConfigPage(QWidget * parent = 0);
 
 	//! Class Destructor
-	virtual ~DiveStack();
+	virtual ~ConfigPage();
 
-protected:
+public:
 
-	//! @brief Create Proxy Models
-	void createProxies();
+	//! Initialize Page Contents
+	virtual void initializePage();
 
-	//! @brief Create View Widgets
-	void createWidgets();
+	//! @return Next Page Id
+	virtual int nextId() const;
 
-	//! @brief Create a new Editor Panel Instance for this Stacked View
-	virtual IModelEditPanel * createEditor();
+private:
 
-	//! @brief Read Settings for the Stacked View
-	virtual void readSettings();
+	//! Create Layout
+	void createLayout();
 
-	//! @brief Write Settings for the Stacked View
-	virtual void writeSettings();
+private:
+	QLabel *		m_lblSerial;
+	QLabel *		m_lblManuf;
+	QLabel *		m_lblModel;
 
-protected slots:
-	void onHeaderChanged();
-	void onListSortChanged(int);
-
-protected:
-	QSortFilterProxyModel * 	m_listProxy;
+	QLineEdit *		m_txtName;
 
 };
 
-#endif /* DIVE_STACKEDVIEW_HPP_ */
+} } /* wizards::addcomputer */
+
+#endif /* WIZARDS_ADDCOMPUTER_CONFIGPAGE_HPP_ */

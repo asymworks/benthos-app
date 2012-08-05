@@ -125,6 +125,7 @@ private slots:
 
 	void actViewDetailsTriggered();
 
+	void actNewComputerTriggered();
 	void actNewDiveTriggered();
 	void actNewDiveSiteTriggered();
 
@@ -138,6 +139,7 @@ private:
 	QAction *				m_actCloseLogbook;
 	QAction *				m_actExit;
 
+	QAction *				m_actNewComputer;
 	QAction *				m_actNewDive;
 	QAction *				m_actNewDiveSite;
 

@@ -65,7 +65,7 @@ public:
 	virtual ~DriverParamsDialog();
 
 	//! @return Parameter String
-	std::string param_string() const;
+	std::string param_string(const std::string & skipParam = std::string()) const;
 
 protected slots:
 	void currentIndexChanged(const QModelIndex &);

@@ -20,62 +20,48 @@
  * 02110-1301, USA.
  */
 
-#ifndef DIVE_STACKEDVIEW_HPP_
-#define DIVE_STACKEDVIEW_HPP_
+#ifndef DRIVERPARAMS_DELEGATE_HPP_
+#define DRIVERPARAMS_DELEGATE_HPP_
 
 /**
- * @file src/mvf/dive_stackedview.hpp
- * @brief Stacked View for Dives
+ * @file src/mvf/driverparams_delegate.hpp
+ * @brief Delegate for Driver Parameters
  * @author Jonathan Krauss <jkrauss@asymworks.com>
  */
 
-#include <QSortFilterProxyModel>
+#include <QModelIndex>
+#include <QStyleOptionViewItem>
+#include <QStyledItemDelegate>
 #include <QWidget>
 
-#include <controls/stackedview.hpp>
+#include <mvf/delegates.hpp>
+
+#include <benthos/divecomputer/driverclass.hpp>
+using namespace benthos::dc;
 
 /**
- * DiveStack Widget
+ * @brief Driver Parameters Delegate
  *
- * Implements a Model-View Stack Widget for Dives.  The supported view
- * modes are list view, statistics view, and cover-flow view (upcoming).
+ * Custom delegate to provide the correct editor for model parameters.
  */
-class DiveStack: public StackedView
+class DriverParamsDelegate: public NoFocusDelegate
 {
-	Q_OBJECT
-
 public:
 
 	//! Class Constructor
-	DiveStack(QWidget * parent = 0);
+	DriverParamsDelegate(DriverClass::Ptr dclass, QObject * parent = 0);
 
 	//! Class Destructor
-	virtual ~DiveStack();
+	virtual ~DriverParamsDelegate();
 
-protected:
+public:
 
-	//! @brief Create Proxy Models
-	void createProxies();
+	//! Create Editor
+	QWidget * createEditor(QWidget * parent, const QStyleOptionViewItem & option, const QModelIndex & index) const;
 
-	//! @brief Create View Widgets
-	void createWidgets();
-
-	//! @brief Create a new Editor Panel Instance for this Stacked View
-	virtual IModelEditPanel * createEditor();
-
-	//! @brief Read Settings for the Stacked View
-	virtual void readSettings();
-
-	//! @brief Write Settings for the Stacked View
-	virtual void writeSettings();
-
-protected slots:
-	void onHeaderChanged();
-	void onListSortChanged(int);
-
-protected:
-	QSortFilterProxyModel * 	m_listProxy;
+private:
+	DriverClass::Ptr	m_dclass;
 
 };
 
-#endif /* DIVE_STACKEDVIEW_HPP_ */
+#endif /* DRIVERPARAMS_DELEGATE_HPP_ */

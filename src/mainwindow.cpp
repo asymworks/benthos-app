@@ -48,6 +48,10 @@
 #include "mvf/views/site_stackedview.hpp"
 #include "mvf/views/site_editpanel.hpp"
 
+#include "wizards/addcomputerwizard.hpp"
+
+using namespace wizards;
+
 MainWindow::MainWindow(QWidget * parent)
 	: QMainWindow(parent), m_Logbook(), m_LogbookName("None"), m_LogbookPath()
 {
@@ -75,6 +79,25 @@ void MainWindow::actCloseLogbookTriggered()
 
 void MainWindow::actConfigUnitsTriggered()
 {
+}
+
+void MainWindow::actNewComputerTriggered()
+{
+	DiveComputer::Ptr dc(AddComputerWizard::RunWizard());
+	if (! dc)
+		return;
+
+	IDiveComputerFinder::Ptr dcf = boost::dynamic_pointer_cast<IDiveComputerFinder>(m_Logbook->session()->finder<DiveComputer>());
+	if (dcf->findBySerial(dc->driver(), dc->serial()))
+	{
+		QMessageBox::warning(this, tr("Existing Computer"), tr("The dive computer already exists in the Logbook.  Benthos does not support adding the same computer more than once."));
+		return;
+	}
+
+	m_Logbook->session()->add(dc);
+	m_Logbook->session()->commit();
+
+	m_navTree->update();
 }
 
 void MainWindow::actNewDiveTriggered()
@@ -285,6 +308,10 @@ void MainWindow::createActions()
 	m_actExit->setStatusTip(tr("Exit the Benthos Application"));
 	connect(m_actExit, SIGNAL(triggered()), this, SLOT(close()));
 
+	m_actNewComputer = new QAction(tr("New Dive &Computer..."), this);
+	m_actNewComputer->setStatusTip(tr("Add a new Dive Computer"));
+	connect(m_actNewComputer, SIGNAL(triggered()), this, SLOT(actNewComputerTriggered()));
+
 	m_actNewDive = new QAction(tr("New &Dive..."), this);
 	m_actNewDive->setStatusTip(tr("Manually add a new Dive log entry"));
 	connect(m_actNewDive, SIGNAL(triggered()), this, SLOT(actNewDiveTriggered()));
@@ -444,6 +471,7 @@ void MainWindow::createMenus()
 	m_fileMenu->addSeparator();
 	m_fileMenu->addAction(m_actNewDive);
 	m_fileMenu->addAction(m_actNewDiveSite);
+	m_fileMenu->addAction(m_actNewComputer);
 	m_fileMenu->addSeparator();
 	m_fileMenu->addAction(m_actExit);
 

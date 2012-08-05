@@ -20,62 +20,43 @@
  * 02110-1301, USA.
  */
 
-#ifndef DIVE_STACKEDVIEW_HPP_
-#define DIVE_STACKEDVIEW_HPP_
+#ifndef ADDCOMPUTERWIZARD_HPP_
+#define ADDCOMPUTERWIZARD_HPP_
 
 /**
- * @file src/mvf/dive_stackedview.hpp
- * @brief Stacked View for Dives
+ * @file src/wizards/addcomputerwizard.hpp
+ * @brief Add Dive Computer Wizard
  * @author Jonathan Krauss <jkrauss@asymworks.com>
  */
 
-#include <QSortFilterProxyModel>
 #include <QWidget>
+#include <QWizard>
 
-#include <controls/stackedview.hpp>
+#include <benthos/logbook/dive_computer.hpp>
+using namespace benthos::logbook;
 
-/**
- * DiveStack Widget
- *
- * Implements a Model-View Stack Widget for Dives.  The supported view
- * modes are list view, statistics view, and cover-flow view (upcoming).
- */
-class DiveStack: public StackedView
+namespace wizards {
+
+//! Add Dive Computer Wizard
+class AddComputerWizard: public QWizard
 {
 	Q_OBJECT
 
 public:
 
 	//! Class Constructor
-	DiveStack(QWidget * parent = 0);
+	AddComputerWizard(QWidget * parent = 0);
 
 	//! Class Destructor
-	virtual ~DiveStack();
+	virtual ~AddComputerWizard();
 
-protected:
+public:
 
-	//! @brief Create Proxy Models
-	void createProxies();
-
-	//! @brief Create View Widgets
-	void createWidgets();
-
-	//! @brief Create a new Editor Panel Instance for this Stacked View
-	virtual IModelEditPanel * createEditor();
-
-	//! @brief Read Settings for the Stacked View
-	virtual void readSettings();
-
-	//! @brief Write Settings for the Stacked View
-	virtual void writeSettings();
-
-protected slots:
-	void onHeaderChanged();
-	void onListSortChanged(int);
-
-protected:
-	QSortFilterProxyModel * 	m_listProxy;
+	//! Run the Dive Computer Wizard
+	static DiveComputer::Ptr RunWizard(QWidget * parent = 0);
 
 };
 
-#endif /* DIVE_STACKEDVIEW_HPP_ */
+} /* wizards */
+
+#endif /* ADDCOMPUTERWIZARD_HPP_ */

@@ -47,22 +47,29 @@ set( BENTHOS_SRCS
 	mvf/delegates.cpp
 	mvf/modelcolumn.cpp
 	mvf/models.cpp
+	mvf/delegates/driverparams_delegate.cpp
 	mvf/delegates/logbook_delegate.cpp
 	mvf/delegates/site_tiledelegate.cpp
 	mvf/delegates/tiledelegate.cpp
 	mvf/models/dive_model.cpp
+	mvf/models/drivermodels_model.cpp
 	mvf/models/driverparams_model.cpp
 	mvf/models/logbook_item.cpp
 	mvf/models/logbook_model.cpp
 	mvf/models/site_model.cpp
+	mvf/models/sys/udevserialportmodel.cpp
 	mvf/views/computer_view.cpp
 	mvf/views/dive_editpanel.cpp
+	mvf/views/dive_profileview.cpp
 	mvf/views/dive_stackedview.cpp
 	mvf/views/site_editpanel.cpp
 	mvf/views/site_mapview.cpp
 	mvf/views/site_stackedview.cpp
 	util/qticonloader.cpp
 	util/units.cpp
+	wizards/addcomputerwizard.cpp
+	wizards/addcomputer/configpage.cpp
+	wizards/addcomputer/intropage.cpp
 	workers/transferworker.cpp
 )
 
@@ -86,12 +93,17 @@ set( BENTHOS_MOC_HDRS
 	dialogs/modeleditdialog.hpp
 	dialogs/transferdialog.hpp
 	mvf/models.hpp
+	mvf/models/sys/udevserialportmodel.hpp
 	mvf/views/computer_view.hpp
 	mvf/views/dive_editpanel.hpp
+	mvf/views/dive_profileview.hpp
 	mvf/views/dive_stackedview.hpp
 	mvf/views/site_editpanel.hpp
 	mvf/views/site_mapview.hpp
 	mvf/views/site_stackedview.hpp
+	wizards/addcomputerwizard.hpp
+	wizards/addcomputer/configpage.hpp
+	wizards/addcomputer/intropage.hpp
 	workers/transferworker.hpp
 )
 
@@ -116,6 +128,16 @@ find_package( Boost 1.45 REQUIRED COMPONENTS filesystem system )
 include_directories(
 	${Boost_INCLUDE_DIR}
 )
+
+# Find UDev
+find_path( UDEV_INCLUDE_DIR libudev.h )
+find_library( UDEV_LIBS udev )
+set( UDEV_FOUND false )
+if( UDEV_INCLUDE_DIR AND UDEV_LIBS )
+	set( UDEV_FOUND true )
+endif( UDEV_INCLUDE_DIR AND UDEV_LIBS )
+
+include_directories(${UDEV_INCLUDE_DIR})
 
 # Find liblogbook
 find_package(PkgConfig)
@@ -163,4 +185,5 @@ target_link_libraries( benthos
 	${Boost_LIBRARIES}
 	${BENTHOS_LOGBOOK_LDFLAGS} 
 	${BENTHOS_DC_LDFLAGS}
+	${UDEV_LIBS}
 )

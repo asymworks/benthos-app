@@ -81,7 +81,7 @@ public:
 	virtual bool setData(const QModelIndex & index, const QVariant & value, int role = Qt::DisplayRole);
 
 	//! @return String Representation of the Parameters
-	virtual std::string toString() const;
+	virtual std::string toString(const std::string & skipParam = std::string()) const;
 
 protected:
 

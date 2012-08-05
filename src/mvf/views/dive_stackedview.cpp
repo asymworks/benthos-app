@@ -20,11 +20,11 @@
  * 02110-1301, USA.
  */
 
-#include "controls/multicolumnlistview.hpp"
 #include "mvf/delegates.hpp"
 #include "mvf/models/dive_model.hpp"
 
 #include "dive_editpanel.hpp"
+#include "dive_profileview.hpp"
 #include "dive_stackedview.hpp"
 
 ModelFactory<DiveModel> dive_mf;
@@ -58,21 +58,19 @@ void DiveStack::createProxies()
 
 void DiveStack::createWidgets()
 {
-	MultiColumnListView * lv = new MultiColumnListView;
-	lv->setModel(m_listProxy);
-	lv->setSortingEnabled(true);
-	lv->sortByColumn(-1, Qt::AscendingOrder);
+	DiveProfileView * pv = new DiveProfileView;
+	pv->setModel(m_listProxy);
 
-	m_viewList[ListViewMode] = lv;
-	addWidget(lv);
+	m_viewList[ListViewMode] = pv;
+	addWidget(pv);
 
 	m_viewMode = TileViewMode;
 
 	readSettings();
 
-	connect(lv, SIGNAL(headerChanged()), this, SLOT(onHeaderChanged()));
-	connect(lv->header(), SIGNAL(sectionClicked(int)), this, SLOT(onListSortChanged(int)));
-	connect(lv, SIGNAL(doubleClicked(const QModelIndex &)), this, SLOT(showEditor(const QModelIndex &)));
+	connect(pv, SIGNAL(headerChanged()), this, SLOT(onHeaderChanged()));
+	connect(pv, SIGNAL(sectionClicked(int)), this, SLOT(onListSortChanged(int)));
+	connect(pv, SIGNAL(doubleClicked(const QModelIndex &)), this, SLOT(showEditor(const QModelIndex &)));
 }
 
 void DiveStack::onHeaderChanged()
@@ -96,10 +94,10 @@ void DiveStack::readSettings()
 	s.beginGroup(QString("%1/ListView").arg(metaObject()->className()));
 	sc = s.value("sort_column", -1);
 	so = s.value("sort_order", Qt::AscendingOrder);
-	((MultiColumnListView *)m_viewList[ListViewMode])->loadState(s);
+	((DiveProfileView *)m_viewList[ListViewMode])->loadState(s);
 
 	m_listProxy->sort(sc.toInt(), (Qt::SortOrder)so.toInt());
-	((MultiColumnListView *)m_viewList[ListViewMode])->header()->setSortIndicator(sc.toInt(), (Qt::SortOrder)so.toInt());
+	((DiveProfileView *)m_viewList[ListViewMode])->setSortIndicator(sc.toInt(), (Qt::SortOrder)so.toInt());
 	s.endGroup();
 
 	// Load the base settings
@@ -115,7 +113,7 @@ void DiveStack::writeSettings()
 
 	// Save List View Properties
 	s.beginGroup(QString("%1/ListView").arg(metaObject()->className()));
-	((MultiColumnListView *)m_viewList[ListViewMode])->saveState(s);
+	((DiveProfileView *)m_viewList[ListViewMode])->saveState(s);
 	s.setValue("sort_column", m_listProxy->sortColumn());
 	s.setValue("sort_order", m_listProxy->sortOrder());
 	s.endGroup();

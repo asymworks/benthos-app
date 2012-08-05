@@ -20,62 +20,53 @@
  * 02110-1301, USA.
  */
 
-#ifndef DIVE_STACKEDVIEW_HPP_
-#define DIVE_STACKEDVIEW_HPP_
+#ifndef DRIVERMODELS_MODEL_HPP_
+#define DRIVERMODELS_MODEL_HPP_
 
 /**
- * @file src/mvf/dive_stackedview.hpp
- * @brief Stacked View for Dives
+ * @file src/mvf/models/drivermodels_model.hpp
+ * @brief Driver Model List Model
  * @author Jonathan Krauss <jkrauss@asymworks.com>
  */
 
-#include <QSortFilterProxyModel>
-#include <QWidget>
+#include <utility>
+#include <vector>
 
-#include <controls/stackedview.hpp>
+#include <QAbstractListModel>
+
+#include <benthos/divecomputer/driverclass.hpp>
+#include <benthos/divecomputer/registry.hpp>
+
+using namespace benthos::dc;
 
 /**
- * DiveStack Widget
+ * @brief Driver Model List Model
  *
- * Implements a Model-View Stack Widget for Dives.  The supported view
- * modes are list view, statistics view, and cover-flow view (upcoming).
+ * Model representing the model types supported by a dive computer driver
+ * plugin.  The display text is the model name, and both the edit role and
+ * user role contain the model number.
  */
-class DiveStack: public StackedView
+class DriverModelsModel: public QAbstractListModel
 {
-	Q_OBJECT
-
 public:
 
 	//! Class Constructor
-	DiveStack(QWidget * parent = 0);
+	DriverModelsModel(DriverClass::Ptr dclass, QObject * parent = 0);
 
 	//! Class Destructor
-	virtual ~DiveStack();
+	virtual ~DriverModelsModel();
 
-protected:
+public:
 
-	//! @brief Create Proxy Models
-	void createProxies();
+	//! @return Item Data
+	virtual QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const;
 
-	//! @brief Create View Widgets
-	void createWidgets();
+	//! @return Number of Rows in the Model
+	virtual int rowCount(const QModelIndex & parent = QModelIndex()) const;
 
-	//! @brief Create a new Editor Panel Instance for this Stacked View
-	virtual IModelEditPanel * createEditor();
-
-	//! @brief Read Settings for the Stacked View
-	virtual void readSettings();
-
-	//! @brief Write Settings for the Stacked View
-	virtual void writeSettings();
-
-protected slots:
-	void onHeaderChanged();
-	void onListSortChanged(int);
-
-protected:
-	QSortFilterProxyModel * 	m_listProxy;
+private:
+	std::vector<std::pair<int, std::string> >		m_models;
 
 };
 
-#endif /* DIVE_STACKEDVIEW_HPP_ */
+#endif /* DRIVERMODELS_MODEL_HPP_ */

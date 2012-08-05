@@ -26,6 +26,7 @@
 #include <QVBoxLayout>
 
 #include "controls/propertygrid.hpp"
+#include "mvf/delegates/driverparams_delegate.hpp"
 #include "driverparamsdialog.hpp"
 
 DriverParamsDialog::DriverParamsDialog(DriverClass::Ptr cls, const std::string & args, QWidget * parent)
@@ -36,6 +37,7 @@ DriverParamsDialog::DriverParamsDialog(DriverClass::Ptr cls, const std::string &
 
 	// Create the Property Grid
 	m_view = new PropertyGridView;
+	m_view->setItemDelegate(new DriverParamsDelegate(cls));
 	m_view->setModel(m_model);
 
 	connect(m_view, SIGNAL(currentIndexChanged(const QModelIndex &)), this, SLOT(currentIndexChanged(const QModelIndex &)));
@@ -93,7 +95,7 @@ void DriverParamsDialog::currentIndexChanged(const QModelIndex & index)
 	}
 }
 
-std::string DriverParamsDialog::param_string() const
+std::string DriverParamsDialog::param_string(const std::string & skipParam) const
 {
-	return m_model->toString();
+	return m_model->toString(skipParam);
 }
