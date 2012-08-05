@@ -20,71 +20,75 @@
  * 02110-1301, USA.
  */
 
-#ifndef COMPOSITELISTVIEW_HPP_
-#define COMPOSITELISTVIEW_HPP_
+#ifndef DIVE_PROFILEVIEW_HPP_
+#define DIVE_PROFILEVIEW_HPP_
 
 /**
- * @file src/controls/compositelistview.hpp
- * @brief Composite List View Class
+ * @brief src/mvf/views/dive_profileview.hpp
+ * @brief Dive Profile View Class
  * @author Jonathan Krauss <jkrauss@asymworks.com>
  */
 
-#include <QAbstractItemView>
-#include <QModelIndex>
+#include <QTreeView>
 #include <QWidget>
 
 #include <controls/benthositemview.hpp>
+#include <controls/multicolumnlistview.hpp>
 
 /**
- * @brief Composite List View Base Class
- *
- * Base class for controls which combine a QAbstractItemView object with other
- * view objects (e.g. the Tile View, Dive Profile, Cover Flow).  This class
- * exposes common QAbstractListView methods such as currentIndex() so that the
- * higher-level view objects can treat this as a standalone item view.
- *
- * Child classes must call setItemView() to set the actual QAbstractItemView
- * object which is wrapped by this class.
+ * @brief
  */
-class CompositeListView: public QWidget, public IBenthosItemView
+class DiveProfileView: public QWidget, public IBenthosItemView
 {
 	Q_OBJECT
 
 public:
 
 	//! Class Constructor
-	CompositeListView(QWidget * parent = 0);
+	DiveProfileView(QWidget * parent = 0);
 
 	//! Class Destructor
-	virtual ~CompositeListView();
+	virtual ~DiveProfileView();
 
 public:
 
 	//! @return Current Item Index
 	virtual QModelIndex currentIndex() const;
 
-	//! @return Wrapped Item View
-	QAbstractItemView * view() const;
+	//! Load View State
+	virtual void loadState(QSettings &);
 
-	//! @param[in] Item View to Wrap
-	void setView(QAbstractItemView * v);
+	//! Save View State
+	virtual void saveState(QSettings &);
 
-signals:
-	void activated(const QModelIndex &);
-	void clicked(const QModelIndex &);
-	void doubleClicked(const QModelIndex &);
+	//! Set the Source Model
+	virtual void setModel(QAbstractItemModel * model);
 
-public slots:
-	void setCurrentIndex(const QModelIndex &);
+	//! Set the Sort Indicator
+	virtual void setSortIndicator(int logicalIndex, Qt::SortOrder order);
 
 protected slots:
 	void onActivated(const QModelIndex &);
 	void onClicked(const QModelIndex &);
 	void onDoubleClicked(const QModelIndex &);
+	void onHeaderChanged();
+	void onSectionClicked(int);
+	void onCurrentIndexChanged(const QModelIndex &, const QModelIndex &);
+	void onCurrentSelectionChanged(const QItemSelection &, const QItemSelection &);
+
+signals:
+	void activated(const QModelIndex &);
+	void clicked(const QModelIndex &);
+	void doubleClicked(const QModelIndex &);
+	void headerChanged();
+	void sectionClicked(int);
+
+	void currentIndexChanged(const QModelIndex &, const QModelIndex &);
+	void currentSelectionChanged(const QItemSelection &, const QItemSelection &);
 
 private:
-	QAbstractItemView *			m_view;
+	MultiColumnListView *		m_listview;
 
 };
 
-#endif /* COMPOSITELISTVIEW_HPP_ */
+#endif /* DIVE_PROFILEVIEW_HPP_ */

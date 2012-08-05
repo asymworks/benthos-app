@@ -29,6 +29,7 @@
 #include "compositelistview.hpp"
 #include "dialogs/modeleditdialog.hpp"
 
+#include "benthositemview.hpp"
 #include "stackedview.hpp"
 
 StackedView::StackedView(IModelFactory * mfactory, QWidget * parent)
@@ -53,9 +54,9 @@ QModelIndex StackedView::currentModelIndex() const
 	if (iv)
 		return iv->currentIndex();
 
-	CompositeListView * cv = dynamic_cast<CompositeListView *>(currentWidget());
-	if (cv)
-		return cv->currentIndex();
+	IBenthosItemView * biv = dynamic_cast<IBenthosItemView *>(currentWidget());
+	if (biv)
+		return biv->currentIndex();
 
 	return QModelIndex();
 }
@@ -69,9 +70,9 @@ QModelIndex StackedView::currentModelIndexForMode(ViewMode vm) const
 	if (iv)
 		return iv->currentIndex();
 
-	CompositeListView * cv = dynamic_cast<CompositeListView *>(m_viewList.at(vm));
-	if (cv)
-		return cv->currentIndex();
+	IBenthosItemView * biv = dynamic_cast<IBenthosItemView *>(m_viewList.at(vm));
+	if (biv)
+		return biv->currentIndex();
 
 	return QModelIndex();
 }

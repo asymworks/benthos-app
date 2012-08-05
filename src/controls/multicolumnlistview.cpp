@@ -56,6 +56,12 @@ MultiColumnListView::~MultiColumnListView()
 {
 }
 
+void MultiColumnListView::currentChanged(const QModelIndex & current, const QModelIndex & previous)
+{
+	QTreeView::currentChanged(current, previous);
+	emit currentIndexChanged(current, previous);
+}
+
 void MultiColumnListView::drawBranches(QPainter * painter, const QRect & rect, const QModelIndex & index) const
 {
 }
@@ -159,6 +165,12 @@ void MultiColumnListView::saveState(QSettings & s)
 
 	s.setValue("col_width", col_width.join(","));
 	s.setValue("col_vidx", col_vidx.join(","));
+}
+
+void MultiColumnListView::selectionChanged(const QItemSelection & selected, const QItemSelection & deselected)
+{
+	QTreeView::selectionChanged(selected, deselected);
+	emit currentSelectionChanged(selected, deselected);
 }
 
 void MultiColumnListView::setModel(QAbstractItemModel * model)

@@ -93,8 +93,13 @@ protected slots:
 	void showContextMenu(const QPoint & point);
 	void toggleColumn(int i);
 
+	virtual void currentChanged(const QModelIndex &, const QModelIndex &);
+	virtual void selectionChanged(const QItemSelection &, const QItemSelection &);
+
 signals:
 	void headerChanged();
+	void currentIndexChanged(const QModelIndex &, const QModelIndex &);
+	void currentSelectionChanged(const QItemSelection &, const QItemSelection &);
 
 };
 

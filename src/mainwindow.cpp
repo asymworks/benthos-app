@@ -97,7 +97,7 @@ void MainWindow::actNewComputerTriggered()
 	m_Logbook->session()->add(dc);
 	m_Logbook->session()->commit();
 
-	m_navTree->update();
+	//FIXME: NAVTREE, I ADD COMPUTER. Y U NO UPDATE?
 }
 
 void MainWindow::actNewDiveTriggered()
