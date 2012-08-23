@@ -38,9 +38,13 @@
  */
 enum quantity_t
 {
-	qtDepth,
+	qtUnknown = -1,
+	qtDepth = 0,
 	qtTemperature,
 	qtPressure,
+	qtTime,
+	qtHeartrate,
+	qtHeading
 };
 
 /**
@@ -156,12 +160,12 @@ protected:
 /**
  * @brief Unit Type Record
  */
-typedef struct
+typedef struct _unit_t
 {
-	int					idx;
-	const char *		name;
-	std::wstring		abbr;
-	IUnitConverter *	conv;
+	int							idx;
+	const char *				name;
+	std::wstring				abbr;
+	IUnitConverter *			conv;
 } unit_t;
 
 /**

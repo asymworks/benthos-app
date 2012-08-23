@@ -29,11 +29,14 @@
  * @author Jonathan Krauss <jkrauss@asymworks.com>
  */
 
+#include <QSplitter>
 #include <QTreeView>
 #include <QWidget>
 
 #include <controls/benthositemview.hpp>
 #include <controls/multicolumnlistview.hpp>
+
+#include "profile_view.hpp"
 
 /**
  * @brief
@@ -73,6 +76,7 @@ protected slots:
 	void onDoubleClicked(const QModelIndex &);
 	void onHeaderChanged();
 	void onSectionClicked(int);
+	void onSplitterMoved(int, int);
 	void onCurrentIndexChanged(const QModelIndex &, const QModelIndex &);
 	void onCurrentSelectionChanged(const QItemSelection &, const QItemSelection &);
 
@@ -82,12 +86,15 @@ signals:
 	void doubleClicked(const QModelIndex &);
 	void headerChanged();
 	void sectionClicked(int);
+	void splitterMoved(int, int);
 
 	void currentIndexChanged(const QModelIndex &, const QModelIndex &);
 	void currentSelectionChanged(const QItemSelection &, const QItemSelection &);
 
 private:
 	MultiColumnListView *		m_listview;
+	ProfileView *				m_profile;
+	QSplitter *					m_splitter;
 
 };
 

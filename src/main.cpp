@@ -23,6 +23,8 @@
 #include <QApplication>
 #include <QMetaType>
 
+#include <boost/locale.hpp>
+
 #include <benthos/logbook/logging.hpp>
 #include <benthos/logbook/profile.hpp>
 
@@ -106,6 +108,10 @@ int main(int argc, char **  argv)
 {
 	init_logging();
 	logging::getLogger("main")->debug("Starting benthos");
+
+	// Setup Boost Locales with Default System Locale
+	boost::locale::generator gen;
+	std::locale::global(gen(""));
 
 	// Setup the Application
 	QApplication app(argc, argv);

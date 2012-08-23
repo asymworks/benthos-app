@@ -430,6 +430,10 @@ void TransferWorker::parse_dives(Driver::Ptr driver, const dive_data_t & dives)
 		// Update Dive Data
 		data.dive->setComputer(m_dc);
 
+		// Set the Dive Mix as the first Mix in the profile
+		if (data.haswp)
+			data.dive->setMix(data.profile.begin()->mix);
+
 		// Create Profile
 		Profile::Ptr profile = Profile::Ptr(new Profile);
 		profile->setComputer(m_dc);

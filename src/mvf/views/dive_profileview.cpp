@@ -20,12 +20,15 @@
  * 02110-1301, USA.
  */
 
+#include <QSortFilterProxyModel>
+#include <QSplitter>
 #include <QVBoxLayout>
 
+#include <mvf/models.hpp>
 #include "dive_profileview.hpp"
 
 DiveProfileView::DiveProfileView(QWidget * parent)
-	: QWidget(parent), m_listview(0)
+	: QWidget(parent), m_listview(0), m_profile(0), m_splitter(0)
 {
 	m_listview = new MultiColumnListView;
 	m_listview->setSortingEnabled(true);
@@ -40,10 +43,18 @@ DiveProfileView::DiveProfileView(QWidget * parent)
 	connect(m_listview, SIGNAL(currentIndexChanged(const QModelIndex &, const QModelIndex &)), this, SLOT(onCurrentIndexChanged(const QModelIndex &, const QModelIndex &)));
 	connect(m_listview, SIGNAL(currentSelectionChanged(const QItemSelection &, const QItemSelection &)), this, SLOT(onCurrentSelectionChanged(const QItemSelection &, const QItemSelection &)));
 
+	m_profile = new ProfileView;
+
+	m_splitter = new QSplitter;
+	m_splitter->setOrientation(Qt::Vertical);
+	m_splitter->addWidget(m_profile);
+	m_splitter->addWidget(m_listview);
+	m_splitter->setStretchFactor(0, 1);
+	m_splitter->setStretchFactor(1, 0);
+
 	QVBoxLayout * vbox = new QVBoxLayout;
 	vbox->setContentsMargins(0, 0, 0, 0);
-	vbox->addSpacing(400);
-	vbox->addWidget(m_listview);
+	vbox->addWidget(m_splitter);
 
 	setLayout(vbox);
 }
@@ -60,6 +71,7 @@ QModelIndex DiveProfileView::currentIndex() const
 void DiveProfileView::loadState(QSettings & s)
 {
 	m_listview->loadState(s);
+	m_splitter->restoreState(s.value("splitstate").toByteArray());
 }
 
 void DiveProfileView::onActivated(const QModelIndex & arg)
@@ -87,9 +99,30 @@ void DiveProfileView::onSectionClicked(int arg)
 	emit sectionClicked(arg);
 }
 
-void DiveProfileView::onCurrentIndexChanged(const QModelIndex & arg1, const QModelIndex & arg2)
+void DiveProfileView::onSplitterMoved(int arg1, int arg2)
 {
-	emit currentIndexChanged(arg1, arg2);
+	emit splitterMoved(arg1, arg2);
+}
+
+void DiveProfileView::onCurrentIndexChanged(const QModelIndex & current, const QModelIndex & previous)
+{
+	QModelIndex idx(current);
+	QAbstractItemModel * m = (QAbstractItemModel *)idx.model();
+	QSortFilterProxyModel * p = dynamic_cast<QSortFilterProxyModel *>(m);
+	while (p != NULL)
+	{
+		idx = p->mapToSource(idx);
+		m = p->sourceModel();
+		p = dynamic_cast<QSortFilterProxyModel *>(m);
+	}
+
+	LogbookQueryModel<Dive> * mdl = dynamic_cast<LogbookQueryModel<Dive> *>(m);
+
+	if (! mdl)
+		m_profile->setDive(Dive::Ptr());
+	m_profile->setDive(mdl->item(idx));
+
+	emit currentIndexChanged(current, previous);
 }
 
 void DiveProfileView::onCurrentSelectionChanged(const QItemSelection & arg1, const QItemSelection & arg2)
@@ -100,6 +133,7 @@ void DiveProfileView::onCurrentSelectionChanged(const QItemSelection & arg1, con
 void DiveProfileView::saveState(QSettings & s)
 {
 	m_listview->saveState(s);
+	s.setValue("splitstate", m_splitter->saveState());
 }
 
 void DiveProfileView::setModel(QAbstractItemModel * model)

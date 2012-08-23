@@ -91,6 +91,17 @@ void _registerUnits()
 	// Register Pressure Units
 	registerUnit(qtPressure, "Bar", L"bar", new LinearUnitConverter(1));
 	registerUnit(qtPressure, "PSI", L"psi", new LinearUnitConverter(14.5038));
+
+	// Register Time Units
+	registerUnit(qtTime, "Minutes", L"min", new LinearUnitConverter(1));
+	registerUnit(qtTime, "Seconds", L"sec", new LinearUnitConverter(60));
+	registerUnit(qtTime, "Hours", L"hr", new LinearUnitConverter(1/(double)(60)));
+
+	// Register Heartrate Units
+	registerUnit(qtHeartrate, "BPM", L"bpm", new LinearUnitConverter(1));
+
+	// Register Heading Units
+	registerUnit(qtHeading, "Degrees", L"deg", new LinearUnitConverter(1));
 }
 
 class _unit_initdata

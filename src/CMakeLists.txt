@@ -62,9 +62,13 @@ set( BENTHOS_SRCS
 	mvf/views/dive_editpanel.cpp
 	mvf/views/dive_profileview.cpp
 	mvf/views/dive_stackedview.cpp
+	mvf/views/profile_plot.cpp
+	mvf/views/profile_table.cpp
+	mvf/views/profile_view.cpp
 	mvf/views/site_editpanel.cpp
 	mvf/views/site_mapview.cpp
 	mvf/views/site_stackedview.cpp
+	util/qcustomplot.cpp
 	util/qticonloader.cpp
 	util/units.cpp
 	wizards/addcomputerwizard.cpp
@@ -98,9 +102,12 @@ set( BENTHOS_MOC_HDRS
 	mvf/views/dive_editpanel.hpp
 	mvf/views/dive_profileview.hpp
 	mvf/views/dive_stackedview.hpp
+	mvf/views/profile_plot.hpp
+	mvf/views/profile_view.hpp
 	mvf/views/site_editpanel.hpp
 	mvf/views/site_mapview.hpp
 	mvf/views/site_stackedview.hpp
+	util/qcustomplot.h
 	wizards/addcomputerwizard.hpp
 	wizards/addcomputer/configpage.hpp
 	wizards/addcomputer/intropage.hpp
@@ -123,7 +130,7 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.hpp.in ${CMAKE_CURRENT_BINARY_
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 # Boost Headers Required
-find_package( Boost 1.45 REQUIRED COMPONENTS filesystem system )
+find_package( Boost 1.45 REQUIRED COMPONENTS filesystem locale system )
 
 include_directories(
 	${Boost_INCLUDE_DIR}

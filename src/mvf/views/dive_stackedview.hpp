@@ -72,6 +72,7 @@ protected:
 protected slots:
 	void onHeaderChanged();
 	void onListSortChanged(int);
+	void onSplitterMoved(int, int);
 
 protected:
 	QSortFilterProxyModel * 	m_listProxy;

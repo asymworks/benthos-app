@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Asymworks, LLC.  All Rights Reserved.
+ * Copyright (C) 2012 Asymworks, LLC.  All Rights Reserved.
  * www.asymworks.com / info@asymworks.com
  *
  * This file is part of the Benthos Dive Log Package (benthos-log.com)
@@ -20,64 +20,55 @@
  * 02110-1301, USA.
  */
 
-#ifndef DIVE_MODEL_HPP_
-#define DIVE_MODEL_HPP_
+#ifndef PROFILE_TABLE_HPP_
+#define PROFILE_TABLE_HPP_
 
 /**
- * @file src/mvf/dive_model.hpp
- * @brief Dive Model Classes
+ * @brief src/mvf/views/profile_view.hpp
+ * @brief Profile Table View Class
  * @author Jonathan Krauss <jkrauss@asymworks.com>
  */
 
-#include "mvf/modelif.hpp"
-#include "mvf/models.hpp"
+#include <QSize>
+#include <QWidget>
 
 #include <benthos/logbook/dive.hpp>
 using namespace benthos::logbook;
 
 /**
- * @brief Dive Model
+ * @brief Render a Dive as a "Table" View
  *
- * Fields:
- * 0: Date/Time
- * 1: Rating
- * 2: Number
- * 3: Repetition
- * 4: Interval
- * 5: Country
- * 6: Place Name
- * 7: Site Name
- * 8: Max Depth
- * 9: Avg Depth
- * 10: Runtime
- * 11: Computer Name
- * 12: Air Temp
- * 13: Max Temp
- * 14: Min Temp
- * 15: Start Pressure
- * 16: End Pressure
- * 17: Comments
- * 18: Dive Site (FK)
- * 19: Dive Computer (FK)
- * 20: Gas Mix (FK)
- * 21: Gas Mix Name
- * 22: Starting Pressure Group
- * 23: Ending Pressure Group
- * 24: Residual Nitrogen Time
- * 25: Desaturation Time
- * 26: No-Fly Time
- * 27: Algorithm
+ * Renders a "table" view of a dive - a square profile with text indicating
+ * the maximum depth, bottom time, surface interval, safety stops, pressure
+ * groups and nitrogen time table.
  */
-class DiveModel: public LogbookQueryModel<Dive>
+class ProfileTableView: public QWidget
 {
 public:
 
 	//! Class Constructor
-	DiveModel(QObject * parent = 0);
+	ProfileTableView(QWidget * parent = 0);
 
 	//! Class Destructor
-	virtual ~DiveModel();
+	virtual ~ProfileTableView();
+
+	//! @return Minimum Size Hint
+	virtual QSize minimumSizeHint() const;
+
+	//! @param[in] Dive to Display
+	void setDive(Dive::Ptr dive);
+
+	//! @return Default Size Hint
+	virtual QSize sizeHint() const;
+
+protected:
+
+	//! @brief Render the Widget
+	virtual void paintEvent(QPaintEvent * e);
+
+private:
+	Dive::Ptr			m_Dive;
 
 };
 
-#endif /* DIVE_MODEL_HPP_ */
+#endif /* PROFILE_TABLE_HPP_ */

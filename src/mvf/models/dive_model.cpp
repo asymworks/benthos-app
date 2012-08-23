@@ -25,6 +25,7 @@
 
 #include <benthos/logbook/dive_computer.hpp>
 #include <benthos/logbook/dive_site.hpp>
+#include <benthos/logbook/mix.hpp>
 
 using namespace benthos::logbook;
 
@@ -97,6 +98,32 @@ DiveModel::DiveModel(QObject * parent)
 			& LogbookQueryModel::model_type::setComputer
 		), "fk_dive_computer", "", NULL, true, true
 	));
+
+	m_columns.push_back(new ModelColumn<LogbookQueryModel::model_type>(
+		new ForeignKeyAdapter<LogbookQueryModel::model_type, Mix>(
+			& LogbookQueryModel::model_type::mix,
+			& LogbookQueryModel::model_type::setMix,
+			& LogbookQueryModel::model_type::setMix
+		), "fk_mix", "", NULL, true, true
+	));
+
+	m_columns.push_back(new ModelColumn<LogbookQueryModel::model_type>(
+		new ForeignKeyWrapper<LogbookQueryModel::model_type, Mix, std::string>(
+			& LogbookQueryModel::model_type::mix,
+			new DefaultFieldAdapter<Mix, std::string>(
+				& Mix::name,
+				& Mix::setName,
+				& Mix::setName
+			)
+		), "mix", "Mix"
+	));
+
+	ADD_OPTIONAL_COLUMN(std::string, start_pressure_group, setStartPressureGroup, "Starting PG", NULL, true, false, Qt::AlignCenter);
+	ADD_OPTIONAL_COLUMN(std::string, end_pressure_group, setEndPressureGroup, "Ending PG", NULL, true, false, Qt::AlignCenter);
+	ADD_OPTIONAL_COLUMN(int, rnt, setRNT, "RNT", new DelegateFactory<MinutesDelegate>, true);
+	ADD_OPTIONAL_COLUMN(int, desat_time, setDesatTime, "Desat Time", new DelegateFactory<MinutesDelegate>, true);
+	ADD_OPTIONAL_COLUMN(int, nofly_time, setNoFlyTime, "No-Fly Time", new DelegateFactory<MinutesDelegate>, true);
+	ADD_OPTIONAL_COLUMN(std::string, algorithm, setAlgorithm, "Algorithm", NULL, true);
 }
 
 DiveModel::~DiveModel()

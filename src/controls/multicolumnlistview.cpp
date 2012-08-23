@@ -111,11 +111,10 @@ void MultiColumnListView::loadState(QSettings & s)
 {
 	QStringList cw = s.value("col_width").toString().split(",");
 	QStringList cv = s.value("col_vidx").toString().split(",");
-	int i;
 
-	for (i = 0; i < cv.length(); i++)
+	for (int i = 0; i < cv.length(); i++)
 	{
-		if (cv.at(i).isEmpty())
+		if (! cv.at(i).isEmpty())
 			continue;
 
 		int vidx = cv.at(i).toInt();
@@ -123,7 +122,7 @@ void MultiColumnListView::loadState(QSettings & s)
 			header()->moveSection(header()->visualIndex(i), vidx);
 	}
 
-	for (i = 0; i < cw.length(); i++)
+	for (int i = 0; i < cw.length(); i++)
 	{
 		if (cw.at(i).isEmpty())
 			continue;

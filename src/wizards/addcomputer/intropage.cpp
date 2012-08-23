@@ -283,6 +283,8 @@ bool IntroPage::validatePage()
 	}
 	catch (std::exception & e)
 	{
+		dev.reset();
+
 		setCursor(Qt::ArrowCursor);
 		QMessageBox mb(QMessageBox::Warning, tr("Connection Error"), QString());
 		mb.setText(tr("Failed to connect to Dive Computer.  Continue anyway?"));
@@ -300,9 +302,13 @@ bool IntroPage::validatePage()
 
 	// Save the Computer Information
 	m_txtParams->setText(QString::fromStdString(params));
-	m_txtSerial->setText(QString("%1").arg(dev->serial_number()));
-	m_txtManuf->setText(QString::fromStdString(dev->manufacturer()));
-	m_txtModel->setText(QString::fromStdString(dev->model_name()));
+
+	if (dev)
+	{
+		m_txtSerial->setText(QString("%1").arg(dev->serial_number()));
+		m_txtManuf->setText(QString::fromStdString(dev->manufacturer()));
+		m_txtModel->setText(QString::fromStdString(dev->model_name()));
+	}
 
 	return QWizardPage::validatePage();
 }
