@@ -112,6 +112,7 @@ protected:
 protected slots:
 	void cbxAuxKeysIndexChanged(int);
 	void cbxProfileIndexChanged(int);
+	void pltDepthBeforeReplot();
 
 private:
 	void loadAuxPlotData(const std::string &);

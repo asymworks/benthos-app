@@ -139,6 +139,8 @@ void ProfilePlotView::createLayout()
 	m_pltDepth->yAxis2->setTickPen(Qt::NoPen);
 	m_pltDepth->yAxis2->setVisible(true);
 
+	connect(m_pltDepth, SIGNAL(beforeReplot()), this, SLOT(pltDepthBeforeReplot()));
+
 	/*
 	 * Setup Aux Plot Margins
 	 */
@@ -278,6 +280,11 @@ void ProfilePlotView::loadAuxPlotData(const std::string & key)
 	m_pltAux->graph(0)->rescaleAxes();
 	setupAuxAxis();
 	m_pltAux->replot();
+}
+
+void ProfilePlotView::pltDepthBeforeReplot()
+{
+	setupAlarms();
 }
 
 QString ProfilePlotView::profileKeyLabel(const std::string & key)
@@ -505,7 +512,10 @@ void ProfilePlotView::setProfile(Profile::Ptr profile)
 				if (((it->time - lastAlarm) > 60) || ! curAlarm)
 				{
 					if (curAlarm)
+					{
+						curAlarm->finalize();
 						m_pltDepth->addItem(curAlarm);
+					}
 
 					curAlarm = new AlarmPlotItem(m_pltDepth);
 					lastAlarm = it->time;
@@ -517,7 +527,10 @@ void ProfilePlotView::setProfile(Profile::Ptr profile)
 		}
 
 		if (curAlarm)
+		{
+			curAlarm->finalize();
 			m_pltDepth->addItem(curAlarm);
+		}
 
 		if (! hasUnit)
 			m_pltDepth->yAxis->setLabel(tr("Depth"));
@@ -575,8 +588,6 @@ void ProfilePlotView::setupAlarms()
 		pi->topLeft->setCoords(pxL, pxT);
 		pi->bottomRight->setType(QCPItemPosition::ptAbsolute);
 		pi->bottomRight->setCoords(pxR, pxB);
-
-		pi->finalize();
 	}
 }
 
