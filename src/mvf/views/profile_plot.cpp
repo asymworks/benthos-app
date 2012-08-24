@@ -432,6 +432,7 @@ void ProfilePlotView::setDive(Dive::Ptr dive)
 void ProfilePlotView::setProfile(Profile::Ptr profile)
 {
 	m_pltDepth->clearGraphs();
+	m_pltDepth->clearItems();
 
 	m_cbxAuxKeys->clear();
 	m_cbxAuxKeys->setEnabled(false);
@@ -500,7 +501,7 @@ void ProfilePlotView::setProfile(Profile::Ptr profile)
 			{
 				std::set<std::string>::const_iterator ait;
 
-				// Add the previous Alarm Item
+				// Group alarms within the same 60 seconds into one item
 				if (((it->time - lastAlarm) > 60) || ! curAlarm)
 				{
 					if (curAlarm)

@@ -37,6 +37,8 @@ AlarmPlotItem::AlarmPlotItem(QCustomPlot * parentPlot)
 
 AlarmPlotItem::~AlarmPlotItem()
 {
+	if (m_popup)
+		m_popup->hide();
 }
 
 void AlarmPlotItem::addAlarm(unsigned int time, const QString & name, const QString & desc)
