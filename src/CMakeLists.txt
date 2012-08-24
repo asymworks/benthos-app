@@ -62,6 +62,7 @@ set( BENTHOS_SRCS
 	mvf/views/dive_editpanel.cpp
 	mvf/views/dive_profileview.cpp
 	mvf/views/dive_stackedview.cpp
+	mvf/views/profile_alarmitem.cpp
 	mvf/views/profile_plot.cpp
 	mvf/views/profile_table.cpp
 	mvf/views/profile_view.cpp
@@ -102,6 +103,7 @@ set( BENTHOS_MOC_HDRS
 	mvf/views/dive_editpanel.hpp
 	mvf/views/dive_profileview.hpp
 	mvf/views/dive_stackedview.hpp
+	mvf/views/profile_alarmitem.hpp
 	mvf/views/profile_plot.hpp
 	mvf/views/profile_view.hpp
 	mvf/views/site_editpanel.hpp

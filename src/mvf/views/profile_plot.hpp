@@ -71,6 +71,9 @@ protected:
 	//! Create Control Layout
 	void createLayout();
 
+	//! @return Label for an Alarm
+	static QString alarmLabel(const std::string & name);
+
 	//! @return Label for an Aux Key
 	static QString profileKeyLabel(const std::string & key);
 
@@ -85,6 +88,9 @@ protected:
 
 	//! @param[in] Profile to Display
 	void setProfile(Profile::Ptr profile);
+
+	//! Setup the Alarm Items
+	void setupAlarms();
 
 	//! Setup the Aux Plot Axes
 	void setupAuxAxis();

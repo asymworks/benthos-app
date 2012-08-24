@@ -29,6 +29,7 @@
 #include <benthos/logbook/logging.hpp>
 #include <benthos/logbook/session.hpp>
 
+#include "profile_alarmitem.hpp"
 #include "profile_plot.hpp"
 
 ProfilePlotView::ProfilePlotView(QWidget * parent)
@@ -49,6 +50,21 @@ ProfilePlotView::ProfilePlotView(QWidget * parent)
 
 ProfilePlotView::~ProfilePlotView()
 {
+}
+
+QString ProfilePlotView::alarmLabel(const std::string & name)
+{
+	std::string lname(name);
+	std::transform(lname.begin(), lname.end(), lname.begin(), tolower);
+
+	if (lname == "ascent")
+		return tr("Ascent Rate");
+	if (lname == "bookmark")
+		return tr("Bookmark");
+
+	std::string name2(name);
+	std::replace(name2.begin(), name2.end(), '_', ' ');
+	return QString::fromStdString(boost::locale::to_title(name2));
 }
 
 void ProfilePlotView::cbxAuxKeysIndexChanged(int index)
@@ -78,6 +94,8 @@ void ProfilePlotView::cbxProfileIndexChanged(int index)
 void ProfilePlotView::createLayout()
 {
 	m_pltDepth = new QCustomPlot;
+	m_pltDepth->setInteraction(QCustomPlot::iSelectItems, true);
+	m_pltDepth->setInteraction(QCustomPlot::iMultiSelect, false);
 
 	/*
 	 * Calculate Left-hand Margin (identical for both plots)
@@ -466,6 +484,9 @@ void ProfilePlotView::setProfile(Profile::Ptr profile)
 		QVector<double> time;
 		QVector<double> depth;
 
+		unsigned int lastAlarm = 0;
+		AlarmPlotItem * curAlarm = 0;
+
 		std::list<waypoint>::const_iterator it;
 		for (it = m_curProfile->profile().begin(); it != m_curProfile->profile().end(); it++)
 		{
@@ -474,7 +495,28 @@ void ProfilePlotView::setProfile(Profile::Ptr profile)
 				depth.push_back(it->data.at("depth"));
 			else
 				depth.push_back(unit.conv->fromNative(it->data.at("depth")));
+
+			if (it->alarms.size() > 0)
+			{
+				std::set<std::string>::const_iterator ait;
+
+				// Add the previous Alarm Item
+				if (((it->time - lastAlarm) > 60) || ! curAlarm)
+				{
+					if (curAlarm)
+						m_pltDepth->addItem(curAlarm);
+
+					curAlarm = new AlarmPlotItem(m_pltDepth);
+					lastAlarm = it->time;
+				}
+
+				for (ait = it->alarms.begin(); ait != it->alarms.end(); ait++)
+					curAlarm->addAlarm(it->time, alarmLabel(* ait), QString());
+			}
 		}
+
+		if (curAlarm)
+			m_pltDepth->addItem(curAlarm);
 
 		if (! hasUnit)
 			m_pltDepth->yAxis->setLabel(tr("Depth"));
@@ -493,6 +535,7 @@ void ProfilePlotView::setProfile(Profile::Ptr profile)
 		m_pltDepth->graph(0)->rescaleAxes();
 		setupTimeAxis();
 		setupDepthAxis();
+		setupAlarms();
 		m_pltDepth->replot();
 	}
 
@@ -507,6 +550,32 @@ void ProfilePlotView::setProfile(Profile::Ptr profile)
 	{
 		m_cbxAuxKeys->setCurrentIndex(m_cbxAuxKeys->findText(m_auxKey, Qt::MatchFlags()));
 		loadAuxPlotData(m_auxKey.toStdString());
+	}
+}
+
+void ProfilePlotView::setupAlarms()
+{
+	for (int i = 0; i < m_pltDepth->itemCount(); ++i)
+	{
+		AlarmPlotItem * pi = dynamic_cast<AlarmPlotItem *>(m_pltDepth->item(i));
+		if (! pi)
+			continue;
+
+		int tavg = (pi->start_time() + pi->end_time()) / 2;
+
+		// Map to Pixel Coordinates
+		int pxL = (int)floor(m_pltDepth->xAxis->coordToPixel(tavg / 60.0f)) - pi->pixmap().width() / 2;
+		int pxR = (int)floor(m_pltDepth->xAxis->coordToPixel(tavg / 60.0f)) + pi->pixmap().width() / 2;
+
+		int pxB = (int)floor(m_pltDepth->yAxis->coordToPixel(m_pltDepth->yAxis->range().upper)) - 8;
+		int pxT = pxB - pi->pixmap().height();
+
+		pi->topLeft->setType(QCPItemPosition::ptAbsolute);
+		pi->topLeft->setCoords(pxL, pxT);
+		pi->bottomRight->setType(QCPItemPosition::ptAbsolute);
+		pi->bottomRight->setCoords(pxR, pxB);
+
+		pi->finalize();
 	}
 }
 
