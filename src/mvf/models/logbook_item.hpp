@@ -41,6 +41,8 @@
 #include <benthos/logbook/session.hpp>
 using namespace benthos::logbook;
 
+#include <mvf/models.hpp>
+
 /**
  * @brief Basic Logbook Model Item Class
  *
@@ -150,19 +152,6 @@ protected:
 };
 
 /**
- * @brief Data Source Functor
- */
-template <class T>
-struct ILogbookDataSource
-{
-	virtual ~ILogbookDataSource() { }
-
-	//! @return List of Items
-	virtual std::vector<typename T::Ptr> getItems(Session::Ptr session) const = 0;
-
-};
-
-/**
  * @brief Data Source Node Item
  *
  * Data Source Nodes have a built-in method to fetch a list of items from
@@ -190,6 +179,12 @@ public:
 	virtual std::vector<typename T::Ptr> getItems(Session::Ptr session) const
 	{
 		return m_source->getItems(session);
+	}
+
+	//! @return Data Source
+	ILogbookDataSource<T> * source() const
+	{
+		return m_source;
 	}
 
 private:

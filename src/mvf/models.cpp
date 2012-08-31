@@ -37,6 +37,8 @@ void CustomTableModel::bind(Session::Ptr session)
 	std::vector<BaseModelColumn *>::const_iterator it;
 	for (it = m_columns.begin(); it != m_columns.end(); it++)
 		(* it)->bind(session);
+
+	on_bind(session);
 }
 
 const std::vector<BaseModelColumn *> & CustomTableModel::columns() const
@@ -75,4 +77,8 @@ int CustomTableModel::findColumn(const QString & col) const
 	}
 
 	return -1;
+}
+
+void CustomTableModel::on_bind(Session::Ptr)
+{
 }

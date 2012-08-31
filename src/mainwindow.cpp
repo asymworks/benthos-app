@@ -564,7 +564,7 @@ void MainWindow::navTreeSelectionChanged(const QModelIndex & selected, const QMo
 
 		LogbookQueryModel<Dive> * mdl = dynamic_cast<LogbookQueryModel<Dive> *>(m_svDives->model());
 		mdl->bind(m_Logbook->session());
-		mdl->resetFromList(dsi->getItems(m_Logbook->session()));
+		mdl->resetFromSource(dsi->source());
 		m_viewStack->setCurrentWidget(m_svDives);
 
 		break;
@@ -578,7 +578,7 @@ void MainWindow::navTreeSelectionChanged(const QModelIndex & selected, const QMo
 
 		LogbookQueryModel<DiveSite> * mdl = dynamic_cast<LogbookQueryModel<DiveSite> *>(m_svSites->model());
 		mdl->bind(m_Logbook->session());
-		mdl->resetFromList(dsi->getItems(m_Logbook->session()));
+		mdl->resetFromSource(dsi->source());
 		m_viewStack->setCurrentWidget(m_svSites);
 
 		break;

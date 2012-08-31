@@ -29,11 +29,16 @@
  * @author Jonathan Krauss <jkrauss@asymworks.com>
  */
 
+#include <boost/any.hpp>
+#include <boost/signals2.hpp>
+
 #include <QAbstractTableModel>
 #include <QObject>
 
 #include "modelcolumn.hpp"
 
+#include <benthos/logbook/mapper.hpp>
+#include <benthos/logbook/persistent.hpp>
 #include <benthos/logbook/session.hpp>
 
 using namespace benthos::logbook;
@@ -73,8 +78,26 @@ public:
 	int findColumn(const QString & col) const;
 
 protected:
+
+	//! Called when the Model is bound to a Session
+	virtual void on_bind(Session::Ptr);
+
+protected:
 	std::vector<BaseModelColumn *>		m_columns;
 	Session::Ptr						m_session;
+
+};
+
+/**
+ * @brief Data Source Functor
+ */
+template <class T>
+struct ILogbookDataSource
+{
+	virtual ~ILogbookDataSource() { }
+
+	//! @return List of Items
+	virtual std::vector<typename T::Ptr> getItems(Session::Ptr session) const = 0;
 
 };
 
@@ -91,7 +114,7 @@ public:
 
 	//! Class Constructor
 	LogbookQueryModel(QObject * parent = 0)
-		: CustomTableModel(parent), m_items()
+		: CustomTableModel(parent), m_items(), m_source(0)
 	{
 	}
 
@@ -101,8 +124,26 @@ public:
 	}
 
 	//! Reload the Items
+	void resetFromSource(ILogbookDataSource<T> * source)
+	{
+		m_source = source;
+		if (m_source)
+			resetFromList(m_source->getItems(m_session));
+	}
+
+	//! Reload the Items
 	void resetFromList(const std::vector<boost::shared_ptr<T> > & items)
 	{
+		if (m_evtAttrSet.connected())
+			m_evtAttrSet.disconnect();
+
+		if (items.size() > 0)
+		{
+			Persistent::Ptr pobj = boost::shared_polymorphic_cast<Persistent>(items[0]);
+			if (pobj)
+				m_evtAttrSet = pobj->events().attr_set.connect(boost::bind(& LogbookQueryModel<T>::evtAttrSet, this, _1, _2, _3));
+		}
+
 		beginResetModel();
 		m_items = items;
 		endResetModel();
@@ -111,6 +152,9 @@ public:
 	//! Clear the Items
 	void clearItems()
 	{
+		if (m_evtAttrSet.connected())
+			m_evtAttrSet.disconnect();
+
 		beginResetModel();
 		m_items.clear();
 		endResetModel();
@@ -203,10 +247,8 @@ public:
 
 		bool ret = col->setData(m_items[r], value, role);
 		if (ret)
-		{
 			m_session->add(m_items[r]);
-			emitDataChanged(index, index);
-		}
+
 		return ret;
 	}
 
@@ -225,8 +267,107 @@ public:
 		return true;
 	}
 
+public:
+
+	/**
+	 * @brief Called when a persistent item attribute changes
+	 * @param[in] Persistent Item Pointer
+	 * @param[in] Field Name
+	 * @param[in] Field Value
+	 */
+	void evtAttrSet(Persistent::Ptr obj, const std::string & field, const boost::any & value)
+	{
+		boost::shared_ptr<T> item = boost::dynamic_pointer_cast<T>(obj);
+		if (! item)
+			return;
+
+		typename std::vector<boost::shared_ptr<T> >::iterator it = std::find(m_items.begin(), m_items.end(), item);
+		if (it == m_items.end())
+			return;
+
+		int rid = it - m_items.begin();
+		int cid = findColumn(QString::fromStdString(field));
+
+		if (cid != -1)
+			emitDataChanged(index(rid, cid), index(rid, cid));
+		else
+			emitDataChanged(index(rid, 0), index(rid, columnCount()));
+	}
+
+	/**
+	 * @brief Called when a persistent item is deleted by the mapper
+	 * @param[in] Mapper Pointer
+	 * @param[in] Item Pointer
+	 */
+	void evtItemDeleted(AbstractMapper::Ptr, Persistent::Ptr obj)
+	{
+		/*
+		 * NB, this is called on Session::commit(), so it will not be called by
+		 * removeRows() directly.  Do not use as a replacement for removeRows().
+		 */
+
+		boost::shared_ptr<T> item = boost::dynamic_pointer_cast<T>(obj);
+		if (! item)
+			return;
+
+		typename std::vector<boost::shared_ptr<T> >::iterator it = std::find(m_items.begin(), m_items.end(), item);
+		if (it == m_items.end())
+			return;
+
+		int rid = it - m_items.begin();
+		beginRemoveRows(QModelIndex(), rid, rid);
+		m_items.erase(it);
+		endRemoveRows();
+	}
+
+	/**
+	 * @brief Called when a persistent item is inserted by the mapper
+	 * @param[in] Mapper Pointer
+	 * @param[in] Item Pointer
+	 */
+	void evtItemInserted(AbstractMapper::Ptr, Persistent::Ptr obj)
+	{
+		if (! m_source || ! m_session)
+			return;
+
+		boost::shared_ptr<T> item = boost::dynamic_pointer_cast<T>(obj);
+		if (! item)
+			return;
+
+		std::vector<boost::shared_ptr<T> > newItems = m_source->getItems(m_session);
+		typename std::vector<boost::shared_ptr<T> >::iterator it = std::find(newItems.begin(), newItems.end(), item);
+		if (it == newItems.end())
+			return;
+
+		int rid = it - newItems.begin();
+		beginInsertRows(QModelIndex(), rid, rid);
+		m_items.insert(m_items.begin() + rid, item);
+		endInsertRows();
+	}
+
+protected:
+
+	//! Called when the Model is bound to a Session
+	virtual void on_bind(Session::Ptr s)
+	{
+		if (m_evtItemAdded.connected())
+			m_evtItemAdded.disconnect();
+		if (m_evtItemDeleted.connected())
+			m_evtItemDeleted.disconnect();
+
+		if (s)
+		{
+			m_evtItemAdded = s->mapper<T>()->events().after_insert.connect(boost::bind(& LogbookQueryModel<T>::evtItemInserted, this, _1, _2));
+			m_evtItemAdded = s->mapper<T>()->events().before_delete.connect(boost::bind(& LogbookQueryModel<T>::evtItemDeleted, this, _1, _2));
+		}
+	}
+
 protected:
 	std::vector<boost::shared_ptr<T> >		m_items;
+	ILogbookDataSource<T> *					m_source;
+	boost::signals2::connection				m_evtAttrSet;
+	boost::signals2::connection				m_evtItemAdded;
+	boost::signals2::connection				m_evtItemDeleted;
 
 };
 
