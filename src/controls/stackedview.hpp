@@ -32,6 +32,7 @@
 #include <map>
 
 #include <QModelIndex>
+#include <QItemSelectionModel>
 #include <QSortFilterProxyModel>
 #include <QStackedWidget>
 #include <QWidget>
@@ -108,6 +109,9 @@ public:
 	//! @return Model Instance
 	QAbstractItemModel * model() const;
 
+	//! @return Item Selection Model
+	QItemSelectionModel * selectionModel() const;
+
 	//! @param[in] New Filter String
 	void setFilterString(const QString & filter);
 
@@ -115,6 +119,9 @@ public:
 	ViewMode view_mode() const;
 
 public slots:
+
+	//! @brief Delete Selected Items
+	void deleteSelection(bool confirm = false);
 
 	//! @brief Refresh the View
 	void refreshView();
@@ -127,6 +134,13 @@ public slots:
 
 signals:
 	void viewModeChanged(ViewMode vm);
+
+	void currentChanged(const QModelIndex & current, const QModelIndex & previous);
+	void selectionChanged(const QItemSelection & selected, const QItemSelection & deselected);
+
+protected slots:
+	void onViewCurrentChanged(const QModelIndex &, const QModelIndex &);
+	void onViewSelectionChanged(const QItemSelection &, const QItemSelection &);
 
 protected:
 

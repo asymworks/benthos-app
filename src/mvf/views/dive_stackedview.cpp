@@ -72,6 +72,12 @@ void DiveStack::createWidgets()
 	connect(pv, SIGNAL(sectionClicked(int)), this, SLOT(onListSortChanged(int)));
 	connect(pv, SIGNAL(splitterMoved(int, int)), this, SLOT(onSplitterMoved(int, int)));
 	connect(pv, SIGNAL(doubleClicked(const QModelIndex &)), this, SLOT(showEditor(const QModelIndex &)));
+
+	connect(pv, SIGNAL(currentIndexChanged(const QModelIndex &, const QModelIndex &)),
+			this, SLOT(onViewCurrentChanged(const QModelIndex &, const QModelIndex &)));
+
+	connect(pv, SIGNAL(currentSelectionChanged(const QItemSelection &, const QItemSelection &)),
+			this, SLOT(onViewSelectionChanged(const QItemSelection &, const QItemSelection &)));
 }
 
 void DiveStack::onHeaderChanged()

@@ -81,6 +81,17 @@ void MainWindow::actConfigUnitsTriggered()
 {
 }
 
+void MainWindow::actDeleteItemsTriggered()
+{
+	StackedView * sv = dynamic_cast<StackedView *>(m_viewStack->currentWidget());
+	if (sv)
+		sv->deleteSelection(true);
+}
+
+void MainWindow::actMergeDivesTriggered()
+{
+}
+
 void MainWindow::actNewComputerTriggered()
 {
 	DiveComputer::Ptr dc(AddComputerWizard::RunWizard());
@@ -230,6 +241,10 @@ void MainWindow::actOpenLogbookTriggered()
 	}
 }
 
+void MainWindow::actRenumberTriggered()
+{
+}
+
 void MainWindow::actSetImperialTriggered()
 {
 	//TODO: Make less hacky?  Store as member variables and use writeSettings()?
@@ -319,6 +334,19 @@ void MainWindow::createActions()
 	m_actNewDiveSite = new QAction(tr("New Dive &Site..."), this);
 	m_actNewDiveSite->setStatusTip(tr("Manually add a new Dive Site"));
 	connect(m_actNewDiveSite, SIGNAL(triggered()), this, SLOT(actNewDiveSiteTriggered()));
+
+	m_actDeleteItems = new QAction(tr("Delete &Item"), this);
+	m_actDeleteItems->setShortcut(QKeySequence::Delete);
+	m_actDeleteItems->setStatusTip(tr("Delete the currently-selected item"));
+	connect(m_actDeleteItems, SIGNAL(triggered()), this, SLOT(actDeleteItemsTriggered()));
+
+	m_actMergeDives = new QAction(tr("&Merge Dives..."), this);
+	m_actMergeDives->setStatusTip(tr("Merge two dive profiles into one"));
+	connect(m_actMergeDives, SIGNAL(triggered()), this, SLOT(actMergeDivesTriggered()));
+
+	m_actRenumber = new QAction(tr("&Renumber Dives..."), this);
+	m_actRenumber->setStatusTip(tr("Renumber the selected dives"));
+	connect(m_actRenumber, SIGNAL(triggered()), this, SLOT(actRenumberTriggered()));
 
 	/*
 	 * Toolbar Actions
@@ -422,6 +450,16 @@ void MainWindow::createLayout()
 	m_dvComputer = new ComputerView(this);
 	m_blankWidget = new QWidget(this);
 
+	connect(m_svDives, SIGNAL(currentChanged(const QModelIndex &, const QModelIndex &)),
+		this, SLOT(viewCurrentChanged(const QModelIndex &, const QModelIndex &)));
+	connect(m_svDives, SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
+		this, SLOT(viewSelectionChanged(const QItemSelection &, const QItemSelection &)));
+
+	connect(m_svSites, SIGNAL(currentChanged(const QModelIndex &, const QModelIndex &)),
+		this, SLOT(viewCurrentChanged(const QModelIndex &, const QModelIndex &)));
+	connect(m_svSites, SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
+		this, SLOT(viewSelectionChanged(const QItemSelection &, const QItemSelection &)));
+
 	m_viewStack = new QStackedWidget(this);
 	m_viewStack->addWidget(m_svDives);
 	m_viewStack->addWidget(m_svSites);
@@ -469,11 +507,17 @@ void MainWindow::createMenus()
 	m_fileMenu->addAction(m_actOpenLogbook);
 	m_fileMenu->addAction(m_actCloseLogbook);
 	m_fileMenu->addSeparator();
-	m_fileMenu->addAction(m_actNewDive);
-	m_fileMenu->addAction(m_actNewDiveSite);
-	m_fileMenu->addAction(m_actNewComputer);
-	m_fileMenu->addSeparator();
 	m_fileMenu->addAction(m_actExit);
+
+	m_logbookMenu = menuBar()->addMenu(tr("&Logbook"));
+	m_logbookMenu->addAction(m_actNewDive);
+	m_logbookMenu->addAction(m_actNewDiveSite);
+	m_logbookMenu->addAction(m_actNewComputer);
+	m_logbookMenu->addSeparator();
+	m_logbookMenu->addAction(m_actDeleteItems);
+	m_logbookMenu->addSeparator();
+	m_logbookMenu->addAction(m_actMergeDives);
+	m_logbookMenu->addAction(m_actRenumber);
 
 	m_unitMenu = new QMenu(tr("Display &Units"));
 	m_unitMenu->addAction(m_actSetMetric);
@@ -519,6 +563,7 @@ void MainWindow::navTreeSelectionChanged(const QModelIndex & selected, const QMo
 		}
 
 		LogbookQueryModel<Dive> * mdl = dynamic_cast<LogbookQueryModel<Dive> *>(m_svDives->model());
+		mdl->bind(m_Logbook->session());
 		mdl->resetFromList(dsi->getItems(m_Logbook->session()));
 		m_viewStack->setCurrentWidget(m_svDives);
 
@@ -532,6 +577,7 @@ void MainWindow::navTreeSelectionChanged(const QModelIndex & selected, const QMo
 			throw std::runtime_error("Navigation Item with type SiteListItem must inherit from DataSourceItem<DiveSite>");
 
 		LogbookQueryModel<DiveSite> * mdl = dynamic_cast<LogbookQueryModel<DiveSite> *>(m_svSites->model());
+		mdl->bind(m_Logbook->session());
 		mdl->resetFromList(dsi->getItems(m_Logbook->session()));
 		m_viewStack->setCurrentWidget(m_svSites);
 
@@ -640,6 +686,28 @@ void MainWindow::updateControls()
 {
 	StackedView * sv = dynamic_cast<StackedView *>(m_viewStack->currentWidget());
 
+	/*
+	 * Dive List Commands
+	 */
+	if (sv == m_svDives)
+	{
+		m_actMergeDives->setEnabled(sv->selectionModel()->selectedRows(0).count() > 1);
+		m_actRenumber->setEnabled(true);
+	}
+	else
+	{
+		m_actMergeDives->setEnabled(false);
+		m_actRenumber->setEnabled(false);
+	}
+
+	/*
+	 * Delete Item Command
+	 */
+	m_actDeleteItems->setEnabled(sv->selectionModel()->selectedRows(0).count() > 0);
+
+	/*
+	 * View Mode Commands
+	 */
 	if (sv)
 	{
 		m_actViewCF->setVisible(sv->hasViewMode(StackedView::CFViewMode));
@@ -689,6 +757,10 @@ void MainWindow::updateControls()
 		m_actViewMap->setChecked(false);
 
 		m_actViewDetails->setEnabled(false);
+
+		m_actDeleteItems->setEnabled(false);
+		m_actMergeDives->setEnabled(false);
+		m_actRenumber->setEnabled(false);
 	}
 }
 
@@ -717,6 +789,16 @@ void MainWindow::updateView()
 	//FIXME: Does Nothing
 	m_navTree->selectionModel()->setCurrentIndex(m_navTree->currentIndex(),
 		QItemSelectionModel::SelectCurrent);
+}
+
+void MainWindow::viewCurrentChanged(const QModelIndex & current, const QModelIndex &)
+{
+	updateControls();
+}
+
+void MainWindow::viewSelectionChanged(const QItemSelection &, const QItemSelection &)
+{
+	updateControls();
 }
 
 void MainWindow::writeSettings()

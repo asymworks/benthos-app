@@ -128,10 +128,16 @@ private slots:
 	void actNewComputerTriggered();
 	void actNewDiveTriggered();
 	void actNewDiveSiteTriggered();
+	void actDeleteItemsTriggered();
+	void actMergeDivesTriggered();
+	void actRenumberTriggered();
 
 	void navTreeSelectionChanged(const QModelIndex &, const QModelIndex &);
 	void txtFilterChanged(const QString &);
 	void viewModeChanged(int);
+
+	void viewCurrentChanged(const QModelIndex &, const QModelIndex &);
+	void viewSelectionChanged(const QItemSelection &, const QItemSelection &);
 
 private:
 	QAction *				m_actNewLogbook;
@@ -142,6 +148,9 @@ private:
 	QAction *				m_actNewComputer;
 	QAction *				m_actNewDive;
 	QAction *				m_actNewDiveSite;
+	QAction *				m_actDeleteItems;
+	QAction *				m_actMergeDives;
+	QAction *				m_actRenumber;
 
 	QAction *				m_actViewCF;
 	QAction *				m_actViewTiled;
@@ -157,6 +166,7 @@ private:
 	QAction *				m_actConfigUnits;
 
 	QMenu *					m_fileMenu;
+	QMenu *					m_logbookMenu;
 	QMenu *					m_unitMenu;
 
 	NavTree *				m_navTree;

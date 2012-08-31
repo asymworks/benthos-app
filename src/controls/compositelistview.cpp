@@ -48,9 +48,26 @@ void CompositeListView::onClicked(const QModelIndex & index)
 	emit clicked(index);
 }
 
+void CompositeListView::onCurrentChanged(const QModelIndex & current, const QModelIndex & previous)
+{
+	emit currentChanged(current, previous);
+}
+
 void CompositeListView::onDoubleClicked(const QModelIndex & index)
 {
 	emit doubleClicked(index);
+}
+
+void CompositeListView::onSelectionChanged(const QItemSelection & selected, const QItemSelection & deselected)
+{
+	emit selectionChanged(selected, deselected);
+}
+
+QItemSelectionModel * CompositeListView::selectionModel() const
+{
+	if (m_view)
+		return m_view->selectionModel();
+	return 0;
 }
 
 void CompositeListView::setCurrentIndex(const QModelIndex & index)
@@ -66,6 +83,15 @@ void CompositeListView::setView(QAbstractItemView * v)
 		disconnect(m_view, SIGNAL(activated(const QModelIndex &)), this, SLOT(onActivated(const QModelIndex &)));
 		disconnect(m_view, SIGNAL(clicked(const QModelIndex &)), this, SLOT(onClicked(const QModelIndex &)));
 		disconnect(m_view, SIGNAL(doubleClicked(const QModelIndex &)), this, SLOT(onDoubleClicked(const QModelIndex &)));
+
+		if (m_view->selectionModel())
+		{
+			disconnect(m_view->selectionModel(), SIGNAL(currentChanged(const QModelIndex &, const QModelIndex &)),
+				this, SLOT(onCurrentChanged(const QModelIndex &, const QModelIndex &)));
+
+			disconnect(m_view->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
+				this, SLOT(onSelectionChanged(const QItemSelection &, const QItemSelection &)));
+		}
 	}
 
 	m_view = v;
@@ -75,6 +101,15 @@ void CompositeListView::setView(QAbstractItemView * v)
 		connect(m_view, SIGNAL(activated(const QModelIndex &)), this, SLOT(onActivated(const QModelIndex &)));
 		connect(m_view, SIGNAL(clicked(const QModelIndex &)), this, SLOT(onClicked(const QModelIndex &)));
 		connect(m_view, SIGNAL(doubleClicked(const QModelIndex &)), this, SLOT(onDoubleClicked(const QModelIndex &)));
+
+		if (m_view->selectionModel())
+		{
+			connect(m_view->selectionModel(), SIGNAL(currentChanged(const QModelIndex &, const QModelIndex &)),
+				this, SLOT(onCurrentChanged(const QModelIndex &, const QModelIndex &)));
+
+			connect(m_view->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
+				this, SLOT(onSelectionChanged(const QItemSelection &, const QItemSelection &)));
+		}
 	}
 }
 

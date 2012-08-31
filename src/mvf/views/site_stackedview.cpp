@@ -108,10 +108,18 @@ void DiveSiteStack::createWidgets()
 
 	connect(tv, SIGNAL(doubleClicked(const QModelIndex &)), this, SLOT(showEditor(const QModelIndex &)));
 	connect(tv, SIGNAL(sortChanged(int, Qt::SortOrder)), this, SLOT(onTileSortChanged(int, Qt::SortOrder)));
+	connect(tv, SIGNAL(currentChanged(const QModelIndex &, const QModelIndex &)),
+		this, SLOT(onViewCurrentChanged(const QModelIndex &, const QModelIndex &)));
+	connect(tv, SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
+		this, SLOT(onViewSelectionChanged(const QItemSelection &, const QItemSelection &)));
 
 	connect(lv, SIGNAL(headerChanged()), this, SLOT(onHeaderChanged()));
 	connect(lv->header(), SIGNAL(sectionClicked(int)), this, SLOT(onListSortChanged(int)));
-	connect(lv, SIGNAL(doubleClicked(const QModelIndex &)), this, SLOT(showEditor(const QModelIndex &)));
+	connect(lv, SIGNAL(doubleClicked(const QModelIndex &)), this, SLOT(showEditor(const QModelIndex &)));;
+	connect(lv->selectionModel(), SIGNAL(currentChanged(const QModelIndex &, const QModelIndex &)),
+		this, SLOT(onViewCurrentChanged(const QModelIndex &, const QModelIndex &)));
+	connect(lv->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
+		this, SLOT(onViewSelectionChanged(const QItemSelection &, const QItemSelection &)));
 
 	connect(mv, SIGNAL(mapViewChanged(QPointF, int, const QString &)), this, SLOT(onMapViewChanged(QPointF, int, const QString &)));
 }

@@ -64,6 +64,9 @@ public:
 	//! Save View State
 	virtual void saveState(QSettings &);
 
+	//! @return Item Selection Model
+	virtual QItemSelectionModel * selectionModel() const;
+
 	//! Set the Source Model
 	virtual void setModel(QAbstractItemModel * model);
 

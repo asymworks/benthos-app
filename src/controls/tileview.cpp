@@ -34,6 +34,8 @@ TileView::TileView(const std::list<std::string> & columns, IDelegateFactory * de
 	m_listview->setUniformItemSizes(true);
 	m_listview->setItemDelegate(delegateFactory->create());
 	m_listview->setResizeMode(QListView::Adjust);
+	m_listview->setSelectionBehavior(QAbstractItemView::SelectRows);
+	m_listview->setSelectionMode(QAbstractItemView::ExtendedSelection);
 	m_listview->setSpacing(16);
 	m_listview->setViewMode(QListView::IconMode);
 
@@ -73,6 +75,14 @@ void TileView::setModel(QAbstractItemModel * m)
 		m_sorter->setView(0);
 	else
 		m_sorter->setView(m_listview);
+
+	/*
+	 * Apparantly selectionModel() isn't created until setModel() is called
+	 */
+	connect(m_listview->selectionModel(), SIGNAL(currentChanged(const QModelIndex &, const QModelIndex &)),
+		this, SLOT(onCurrentChanged(const QModelIndex &, const QModelIndex &)));
+	connect(m_listview->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
+		this, SLOT(onSelectionChanged(const QItemSelection &, const QItemSelection &)));
 }
 
 void TileView::setSortColumn(int col)

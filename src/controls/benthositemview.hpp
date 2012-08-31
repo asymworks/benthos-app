@@ -44,6 +44,9 @@ struct IBenthosItemView
 	//! @return Current Model Index
 	virtual QModelIndex currentIndex() const = 0;
 
+	//! @return Item Selection Model
+	virtual QItemSelectionModel * selectionModel() const = 0;
+
 };
 
 #endif /* BENTHOSITEMVIEW_HPP_ */

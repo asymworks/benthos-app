@@ -100,8 +100,8 @@ void init_logging()
 	logging::logger * logger = logging::getLogger();
 	logger->addHandler(h1);
 	logger->addHandler(h2);
-	logger->setLevel(logging::level::INFO);
-	//logger->setLevel(logging::level::DEBUG);
+	//logger->setLevel(logging::level::INFO);
+	logger->setLevel(logging::level::DEBUG);
 }
 
 int main(int argc, char **  argv)

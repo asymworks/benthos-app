@@ -63,6 +63,9 @@ public:
 	//! @return Current Item Index
 	virtual QModelIndex currentIndex() const;
 
+	//! @return Item Selection Model
+	virtual QItemSelectionModel * selectionModel() const;
+
 	//! @return Wrapped Item View
 	QAbstractItemView * view() const;
 
@@ -74,6 +77,9 @@ signals:
 	void clicked(const QModelIndex &);
 	void doubleClicked(const QModelIndex &);
 
+	void currentChanged(const QModelIndex &, const QModelIndex &);
+	void selectionChanged(const QItemSelection &, const QItemSelection &);
+
 public slots:
 	void setCurrentIndex(const QModelIndex &);
 
@@ -81,6 +87,9 @@ protected slots:
 	void onActivated(const QModelIndex &);
 	void onClicked(const QModelIndex &);
 	void onDoubleClicked(const QModelIndex &);
+
+	void onCurrentChanged(const QModelIndex &, const QModelIndex &);
+	void onSelectionChanged(const QItemSelection &, const QItemSelection &);
 
 private:
 	QAbstractItemView *			m_view;

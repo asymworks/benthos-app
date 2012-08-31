@@ -210,6 +210,21 @@ public:
 		return ret;
 	}
 
+	//! Remove Rows
+	virtual bool removeRows(int row, int count, const QModelIndex & parent = QModelIndex())
+	{
+		if (! m_session)
+			printf("No Session\n");
+
+		beginRemoveRows(parent, row, row + count - 1);
+		for (int i = 0; i < count; i++)
+			m_session->delete_(m_items[row + i]);
+		m_items.erase(m_items.begin() + row, m_items.begin() + row + count);
+		endRemoveRows();
+
+		return true;
+	}
+
 protected:
 	std::vector<boost::shared_ptr<T> >		m_items;
 

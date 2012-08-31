@@ -23,6 +23,7 @@
 #include <stdexcept>
 
 #include <QAbstractItemView>
+#include <QMessageBox>
 #include <QSettings>
 #include <QVariant>
 
@@ -77,6 +78,35 @@ QModelIndex StackedView::currentModelIndexForMode(ViewMode vm) const
 	return QModelIndex();
 }
 
+void StackedView::deleteSelection(bool confirm)
+{
+	if (! selectionModel())
+		return;
+
+	QModelIndexList items = selectionModel()->selectedRows();
+
+	if (confirm && (QMessageBox::question(this, tr("Confirm Delete"), tr("Really delete %1 items?").arg(items.count()), QMessageBox::Yes | QMessageBox::No) == QMessageBox::No))
+		return;
+
+	qSort(items.begin(), items.end());
+	for (int i = items.count() - 1; i > -1; --i)
+	{
+		QModelIndex idx(items.at(i));
+		QAbstractItemModel * m = (QAbstractItemModel *)idx.model();
+		QSortFilterProxyModel * p = dynamic_cast<QSortFilterProxyModel *>(m);
+		while (p != NULL)
+		{
+			idx = p->mapToSource(idx);
+			m = p->sourceModel();
+			p = dynamic_cast<QSortFilterProxyModel *>(m);
+		}
+
+		m->removeRow(idx.row());
+	}
+
+	m_logbook->session()->commit();
+}
+
 const QString & StackedView::filter_string() const
 {
 	return m_filter;
@@ -90,6 +120,16 @@ bool StackedView::hasViewMode(ViewMode vm) const
 QAbstractItemModel * StackedView::model() const
 {
 	return m_model;
+}
+
+void StackedView::onViewCurrentChanged(const QModelIndex & current, const QModelIndex & previous)
+{
+	emit currentChanged(current, previous);
+}
+
+void StackedView::onViewSelectionChanged(const QItemSelection & selected, const QItemSelection & deselected)
+{
+	emit selectionChanged(selected, deselected);
 }
 
 void StackedView::readSettings()
@@ -111,6 +151,19 @@ void StackedView::readSettings()
 void StackedView::refreshView()
 {
 	currentWidget()->update();
+}
+
+QItemSelectionModel * StackedView::selectionModel() const
+{
+	QAbstractItemView * iv = dynamic_cast<QAbstractItemView *>(currentWidget());
+	if (iv)
+		return iv->selectionModel();
+
+	IBenthosItemView * biv = dynamic_cast<IBenthosItemView *>(currentWidget());
+	if (biv)
+		return biv->selectionModel();
+
+	return 0;
 }
 
 void StackedView::setFilterString(const QString & filter)

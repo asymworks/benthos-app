@@ -52,6 +52,8 @@ DiveProfileView::DiveProfileView(QWidget * parent)
 	m_splitter->setStretchFactor(0, 1);
 	m_splitter->setStretchFactor(1, 0);
 
+	connect(m_splitter, SIGNAL(splitterMoved(int, int)), this, SLOT(onSplitterMoved(int, int)));
+
 	QVBoxLayout * vbox = new QVBoxLayout;
 	vbox->setContentsMargins(0, 0, 0, 0);
 	vbox->addWidget(m_splitter);
@@ -134,6 +136,11 @@ void DiveProfileView::saveState(QSettings & s)
 {
 	m_listview->saveState(s);
 	s.setValue("splitstate", m_splitter->saveState());
+}
+
+QItemSelectionModel * DiveProfileView::selectionModel() const
+{
+	return m_listview->selectionModel();
 }
 
 void DiveProfileView::setModel(QAbstractItemModel * model)
