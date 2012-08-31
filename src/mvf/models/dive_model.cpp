@@ -129,3 +129,240 @@ DiveModel::DiveModel(QObject * parent)
 DiveModel::~DiveModel()
 {
 }
+
+struct dive_compare_dates
+{
+	bool operator()(Dive::Ptr lhs, Dive::Ptr rhs)
+	{
+		return (lhs->datetime() < rhs->datetime());
+	}
+};
+
+std::vector<Profile::Ptr> DiveModel::Merge(const std::vector<Dive::Ptr> & dives_, Dive::Ptr & new_dive)
+{
+	std::vector<Dive::Ptr> dives(dives_.begin(), dives_.end());
+	std::sort(dives.begin(), dives.end(), dive_compare_dates());
+
+	/*
+	 * Ensure all dives belong to the same, valid Session
+	 */
+	std::vector<Dive::Ptr>::iterator it;
+	for (it = dives.begin(); it != dives.end(); it++)
+	{
+		if (! (* it) || ! (* it)->session())
+			throw std::runtime_error("Dives do not belong to a Session");
+		if ((* it)->session() != (* dives.begin())->session())
+			throw std::runtime_error("Dives do not belong to the same Session");
+	}
+
+	Dive::Ptr dFirst = * dives.begin();
+	Dive::Ptr dLast = * (dives.end()-1);
+
+	IProfileFinder::Ptr pf = boost::dynamic_pointer_cast<IProfileFinder>(dFirst->session()->finder<Profile>());
+	if (! pf)
+		throw std::runtime_error("Failed to obtain IProfileFinder");
+
+	/*
+	 * Get the list of Profiles to Merge
+	 */
+	std::map<DiveComputer::Ptr, std::list<Profile::Ptr> > merge_profiles;
+	for (it = dives.begin(); it != dives.end(); it++)
+	{
+		std::vector<Profile::Ptr> plist = pf->findByDive((* it)->id());
+		std::vector<Profile::Ptr>::const_iterator pit;
+		for (pit = plist.begin(); pit != plist.end(); pit++)
+		{
+			if (merge_profiles.find((* pit)->computer()) == merge_profiles.end())
+				merge_profiles.insert(std::pair<DiveComputer::Ptr, std::list<Profile::Ptr> >((* pit)->computer(), std::list<Profile::Ptr>()));
+
+			merge_profiles.at((* pit)->computer()).push_back(* pit);
+		}
+	}
+
+	/*
+	 * Check for consistency in the list of Profiles to Merge
+	 */
+	std::map<DiveComputer::Ptr, std::list<Profile::Ptr> >::iterator mit;
+	for (mit = merge_profiles.begin(); mit != merge_profiles.end(); mit++)
+	{
+		if (mit->second.size() != dives.size())
+			throw std::runtime_error("Dives do not have the same number and source of Profiles");
+	}
+
+	/*
+	 * Create the new Dive
+	 */
+	new_dive = Dive::Ptr(new Dive);
+
+	/*
+	 * Merge Profiles
+	 */
+	std::vector<Profile::Ptr> profiles;
+	for (mit = merge_profiles.begin(); mit != merge_profiles.end(); mit++)
+	{
+		Profile::Ptr fProfile = * mit->second.begin();
+		Profile::Ptr profile(new Profile);
+		profile->setComputer(mit->first);
+		profile->setDive(new_dive);
+
+		if (fProfile->name())
+			profile->setName(fProfile->name().get());
+
+		if (fProfile->vendor())
+			profile->setVendor(fProfile->vendor().get());
+
+		int offset = 0;
+		std::list<waypoint> waypoints;
+		std::list<Profile::Ptr>::iterator pit;
+		for (pit = mit->second.begin(); pit != mit->second.end(); pit++)
+		{
+			int last = 0;
+			int diff = 0;
+
+			std::list<waypoint>::const_iterator wit;
+			for (wit = (* pit)->profile().begin(); wit != (* pit)->profile().end(); wit++)
+			{
+				waypoint w;
+				w.time = wit->time + offset;
+				w.mix = wit->mix;
+				w.alarms = wit->alarms;
+				w.data = wit->data;
+				waypoints.push_back(w);
+
+				diff = wit->time - last;
+				last = wit->time;
+			}
+
+			offset += last + diff;
+		}
+
+		profile->setProfile(waypoints);
+		profiles.push_back(profile);
+	}
+
+	/*
+	 * Guess at how much "extra" time is included in the profile.  This is
+	 * based only on the profile that matches the dive computer set in the
+	 * first dive.
+	 */
+	int extra = 0;
+	DiveComputer::Ptr dc = dFirst->computer();
+	if (dc && (merge_profiles.find(dc) != merge_profiles.end()))
+	{
+		Profile::Ptr pFirst = * merge_profiles.at(dc).begin();
+		std::list<waypoint>::const_iterator wit = pFirst->profile().end();
+		--wit;
+
+		int wduration = wit->time / 60 + 1;
+		extra = wduration - dFirst->duration();
+	}
+
+	/*
+	 * Calculate Merged Dive Statistics
+	 */
+	int duration = extra * (dives.size() - 1);
+	double max_depth = 0;
+	double avg_depth = 0;
+	double air_temp = 0;
+	double max_temp = 0;
+	double min_temp = 200;
+
+	for (it = dives.begin(); it != dives.end(); it++)
+	{
+		duration += (* it)->duration();
+		if ((* it)->max_depth() > max_depth)
+			max_depth = (* it)->max_depth();
+
+		if (! (* it)->avg_depth())
+			avg_depth = -1;
+		if (avg_depth != -1)
+			avg_depth += (* it)->avg_depth().get() * (* it)->duration();
+
+		if ((* it)->air_temp() && ((* it)->air_temp().get() > air_temp))
+			air_temp = (* it)->air_temp().get();
+
+		if ((* it)->max_temp() && ((* it)->max_temp().get() > max_temp))
+			max_temp = (* it)->max_temp().get();
+
+		if ((* it)->min_temp() && ((* it)->min_temp().get() < min_temp))
+			min_temp = (* it)->min_temp().get();
+	}
+
+	if (avg_depth != -1)
+		avg_depth /= duration;
+
+	/*
+	 * Merge Dive Header Data
+	 */
+	if (dFirst->datetime())
+		new_dive->setDateTime(dFirst->datetime().get());
+	if (dFirst->utc_offset())
+		new_dive->setUTCOffset(dFirst->utc_offset().get());
+	if (dFirst->number())
+		new_dive->setNumber(dFirst->number().get());
+
+	new_dive->setComputer(dFirst->computer());
+	new_dive->setSite(dFirst->site());
+
+	new_dive->setInterval(dFirst->interval());
+	new_dive->setRepetition(dFirst->repetition());
+	new_dive->setDuration(duration);
+	new_dive->setMaxDepth(max_depth);
+
+	if (avg_depth != -1)
+		new_dive->setAvgDepth(avg_depth);
+
+	if (air_temp != 0)
+		new_dive->setAirTemp(air_temp);
+	if (max_temp != 0)
+		new_dive->setMaxTemp(max_temp);
+	if (min_temp != 200)
+		new_dive->setMinTemp(min_temp);
+
+	if (dFirst->start_pressure())
+		new_dive->setStartPressure(dFirst->start_pressure().get());
+	if (dLast->end_pressure())
+		new_dive->setEndPressure(dLast->end_pressure().get());
+
+	new_dive->setMix(dFirst->mix());
+
+	if (dFirst->salinity())
+		new_dive->setSalinity(dFirst->salinity().get());
+	if (dFirst->comments())
+		new_dive->setComments(dFirst->comments().get());
+	if (dFirst->rating())
+		new_dive->setRating(dFirst->rating().get());
+
+	new_dive->setSafetyStop(dLast->safety_stop());
+	if (dLast->stop_depth())
+		new_dive->setStopDepth(dLast->stop_depth().get());
+	if (dLast->stop_time())
+		new_dive->setStopTime(dLast->stop_time().get());
+
+	if (dFirst->weight())
+		new_dive->setWeight(dFirst->weight().get());
+	if (dFirst->visibility_category())
+		new_dive->setVisibilityCategory(dFirst->visibility_category().get());
+	if (dFirst->visibility_distance())
+		new_dive->setVisibilityDistance(dFirst->visibility_distance().get());
+
+	if (dFirst->start_pressure_group())
+		new_dive->setStartPressureGroup(dFirst->start_pressure_group().get());
+	if (dLast->end_pressure_group())
+		new_dive->setEndPressureGroup(dLast->end_pressure_group().get());
+	if (dLast->rnt())
+		new_dive->setRNT(dLast->rnt().get());
+	if (dLast->desat_time())
+		new_dive->setDesatTime(dLast->desat_time().get());
+	if (dLast->nofly_time())
+		new_dive->setNoFlyTime(dLast->nofly_time().get());
+	if (dFirst->algorithm())
+		new_dive->setAlgorithm(dFirst->algorithm().get());
+
+	new_dive->tags()->assign(dFirst->tags());
+
+	/*
+	 * Return Profiles
+	 */
+	return profiles;
+}

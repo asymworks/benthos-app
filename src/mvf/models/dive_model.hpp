@@ -33,6 +33,7 @@
 #include "mvf/models.hpp"
 
 #include <benthos/logbook/dive.hpp>
+#include <benthos/logbook/profile.hpp>
 using namespace benthos::logbook;
 
 /**
@@ -77,6 +78,26 @@ public:
 
 	//! Class Destructor
 	virtual ~DiveModel();
+
+public:
+
+	/**
+	 * @brief Merge Multiple Dives into a single Dive
+	 * @param[in] List of Dives to Merge
+	 * @param[out] Dive to Populate
+	 * @return List of new Profiles
+	 *
+	 * Merges the selected dives into a single dive by concatenating the profile
+	 * data and intelligently merging dive header information.  Each dive must
+	 * have the same number of profiles, and each dive's profiles must be from
+	 * the same set of devices.  Following the merge, the new dive will have one
+	 * profile for each device in the source dive set.
+	 *
+	 * The returned vector holds strong pointers to the new profile objects,
+	 * each of which holds a strong reference to the new dive object.  The new
+	 * dive is not added to the session by this method.
+	 */
+	static std::vector<Profile::Ptr> Merge(const std::vector<Dive::Ptr> & dives, Dive::Ptr & new_dive);
 
 };
 

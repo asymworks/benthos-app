@@ -195,6 +195,12 @@ public:
 		return m_items[r];
 	}
 
+	//! @return All Items
+	const std::vector<boost::shared_ptr<T> > & items() const
+	{
+		return m_items;
+	}
+
 	//! @return Header Data
 	virtual QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const
 	{

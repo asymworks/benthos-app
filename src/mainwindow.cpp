@@ -20,9 +20,12 @@
  * 02110-1301, USA.
  */
 
+#include <climits>
+
 #include <QFileDialog>
 #include <QGridLayout>
 #include <QHBoxLayout>
+#include <QInputDialog>
 #include <QMessageBox>
 #include <QMenuBar>
 #include <QSettings>
@@ -50,7 +53,19 @@
 
 #include "wizards/addcomputerwizard.hpp"
 
+#include <benthos/logbook/dive.hpp>
+#include <benthos/logbook/profile.hpp>
+using namespace benthos::logbook;
+
 using namespace wizards;
+
+struct dive_compare_dates
+{
+	bool operator()(Dive::Ptr lhs, Dive::Ptr rhs)
+	{
+		return (lhs->datetime() < rhs->datetime());
+	}
+};
 
 MainWindow::MainWindow(QWidget * parent)
 	: QMainWindow(parent), m_Logbook(), m_LogbookName("None"), m_LogbookPath()
@@ -90,6 +105,67 @@ void MainWindow::actDeleteItemsTriggered()
 
 void MainWindow::actMergeDivesTriggered()
 {
+	StackedView * sv = dynamic_cast<StackedView *>(m_viewStack->currentWidget());
+	if (sv != m_svDives)
+		return;
+
+	// Retrieve List of Dives
+	std::vector<Dive::Ptr> dives;
+	std::vector<Dive::Ptr>::iterator it;
+	QModelIndexList items = m_svDives->selectionModel()->selectedRows(0);
+	if (items.count() < 2)
+		return;
+
+	for (int i = items.count() - 1; i > -1; --i)
+	{
+		QModelIndex idx(items.at(i));
+		QAbstractItemModel * m = (QAbstractItemModel *)idx.model();
+		QSortFilterProxyModel * p = dynamic_cast<QSortFilterProxyModel *>(m);
+		while (p != NULL)
+		{
+			idx = p->mapToSource(idx);
+			m = p->sourceModel();
+			p = dynamic_cast<QSortFilterProxyModel *>(m);
+		}
+
+		LogbookQueryModel<Dive> * lqm = dynamic_cast<LogbookQueryModel<Dive> *>(m);
+		if (! lqm)
+			continue;
+
+		dives.push_back(lqm->item(idx));
+	}
+
+	// Confirm the Merge
+	if (QMessageBox::question(this, tr("Confirm Merge"), tr("Merge %1 dives?  This action cannot be undone.").arg(dives.size()), QMessageBox::Yes | QMessageBox::No) == QMessageBox::No)
+		return;
+
+	Dive::Ptr newDive;
+	std::vector<Profile::Ptr> plist;
+	std::vector<Profile::Ptr>::iterator pit;
+
+	try
+	{
+		std::vector<Profile::Ptr> profiles = DiveModel::Merge(dives, newDive);
+		plist.assign(profiles.begin(), profiles.end());
+	}
+	catch (std::runtime_error & e)
+	{
+		QMessageBox mb(QMessageBox::Critical, tr("Merge Failed"), QString());
+		mb.setText(tr("Failed to merge dives.  Your logbook was not modified."));
+		mb.setDetailedText(QString::fromStdString(e.what()));
+		mb.setStandardButtons(QMessageBox::Ok);
+		mb.setDefaultButton(QMessageBox::Ok);
+		mb.exec();
+
+		return;
+	}
+
+	for (pit = plist.begin(); pit != plist.end(); pit++)
+		m_Logbook->session()->add(* pit);
+	for (it = dives.begin(); it != dives.end(); it++)
+		m_Logbook->session()->delete_(* it);
+	m_Logbook->session()->add(newDive);
+	m_Logbook->session()->commit();
 }
 
 void MainWindow::actNewComputerTriggered()
@@ -243,6 +319,78 @@ void MainWindow::actOpenLogbookTriggered()
 
 void MainWindow::actRenumberTriggered()
 {
+	bool ok = false;
+	StackedView * sv = dynamic_cast<StackedView *>(m_viewStack->currentWidget());
+	if (sv != m_svDives)
+		return;
+
+	// Retrieve List of Dives
+	std::vector<Dive::Ptr> dives;
+	QModelIndexList items = m_svDives->selectionModel()->selectedRows(0);
+	if (items.count() < 2)
+	{
+		// Renumber all dives
+		if (QMessageBox::question(this, tr("Confirm Renumber"), tr("Renumber all dives?"), QMessageBox::Yes | QMessageBox::No) == QMessageBox::No)
+			return;
+
+		for (int i = 0; i < m_svDives->model()->rowCount(); ++i)
+		{
+			QModelIndex idx(m_svDives->model()->index(i, 0, QModelIndex()));
+			QAbstractItemModel * m = (QAbstractItemModel *)idx.model();
+			QSortFilterProxyModel * p = dynamic_cast<QSortFilterProxyModel *>(m);
+			while (p != NULL)
+			{
+				idx = p->mapToSource(idx);
+				m = p->sourceModel();
+				p = dynamic_cast<QSortFilterProxyModel *>(m);
+			}
+
+			LogbookQueryModel<Dive> * lqm = dynamic_cast<LogbookQueryModel<Dive> *>(m);
+			if (! lqm)
+				continue;
+
+			dives.push_back(lqm->item(idx));
+		}
+	}
+	else
+	{
+		// Renumber Selected dives
+		for (int i = items.count() - 1; i > -1; --i)
+		{
+			QModelIndex idx(items.at(i));
+			QAbstractItemModel * m = (QAbstractItemModel *)idx.model();
+			QSortFilterProxyModel * p = dynamic_cast<QSortFilterProxyModel *>(m);
+			while (p != NULL)
+			{
+				idx = p->mapToSource(idx);
+				m = p->sourceModel();
+				p = dynamic_cast<QSortFilterProxyModel *>(m);
+			}
+
+			LogbookQueryModel<Dive> * lqm = dynamic_cast<LogbookQueryModel<Dive> *>(m);
+			if (! lqm)
+				continue;
+
+			dives.push_back(lqm->item(idx));
+		}
+	}
+
+	// Get the Starting Number
+	int snum = QInputDialog::getInt(this, tr("Enter the starting number"), tr("Dives will be renumbered starting at:"), 1, 0, INT_MAX, 1, & ok);
+	if (! ok)
+		return;
+
+	// Renumber Dives
+	std::sort(dives.begin(), dives.end(), dive_compare_dates());
+	std::vector<Dive::Ptr>::iterator it;
+	int cur = snum;
+	for (it = dives.begin(); it != dives.end(); it++)
+	{
+		(* it)->setNumber(cur++);
+		m_Logbook->session()->add(* it);
+	}
+
+	m_Logbook->session()->commit();
 }
 
 void MainWindow::actSetImperialTriggered()
