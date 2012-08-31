@@ -345,6 +345,10 @@ public:
 		if (it == newItems.end())
 			return;
 
+		typename std::vector<boost::shared_ptr<T> >::iterator it2 = std::find(m_items.begin(), m_items.end(), item);
+		if (it2 != m_items.end())
+			return;
+
 		int rid = it - newItems.begin();
 		beginInsertRows(QModelIndex(), rid, rid);
 		m_items.insert(m_items.begin() + rid, item);
