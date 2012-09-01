@@ -402,6 +402,7 @@ void MainWindow::actSetImperialTriggered()
 	s.setValue(QString("Unit%1").arg(qtDepth), "Feet");
 	s.setValue(QString("Unit%1").arg(qtTemperature), "Farenheit");
 	s.setValue(QString("Unit%1").arg(qtPressure), "PSI");
+	s.setValue(QString("Unit%1").arg(qtWeight), "Pounds");
 	s.endGroup();
 
 	update();
@@ -416,6 +417,7 @@ void MainWindow::actSetMetricTriggered()
 	s.setValue(QString("Unit%1").arg(qtDepth), "Meters");
 	s.setValue(QString("Unit%1").arg(qtTemperature), "Celsius");
 	s.setValue(QString("Unit%1").arg(qtPressure), "Bar");
+	s.setValue(QString("Unit%1").arg(qtWeight), "Kilograms");
 	s.endGroup();
 
 	update();

@@ -293,6 +293,16 @@ public:
 };
 
 /**
+ * @brief Weight Formatting Delegate
+ */
+class WeightDelegate: public UnitDelegate
+{
+public:
+	WeightDelegate(QObject * parent = 0) : UnitDelegate(qtWeight, "Kilograms", parent) { }
+	virtual ~WeightDelegate() { }
+};
+
+/**
  * @brief Date/Time Formatting Delegate
  */
 class DateTimeDelegate: public NoFocusDelegate

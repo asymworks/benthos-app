@@ -102,6 +102,10 @@ void _registerUnits()
 
 	// Register Heading Units
 	registerUnit(qtHeading, "Degrees", L"deg", new LinearUnitConverter(1));
+
+	// Register Weight Units
+	registerUnit(qtWeight, "Kilograms", L"kg", new LinearUnitConverter(1));
+	registerUnit(qtWeight, "Pounds", L"lb", new LinearUnitConverter(2.20462));
 }
 
 class _unit_initdata

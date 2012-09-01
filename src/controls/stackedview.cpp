@@ -201,7 +201,14 @@ void StackedView::showEditor(const QModelIndex & index)
 	ModelEditDialog d(mdl, pnl, m_logbook, index);
 	d.exec();
 
-	m_logbook->session()->commit();
+	try
+	{
+		m_logbook->session()->commit();
+	}
+	catch (dbapi::sql_error & e)
+	{
+		logging::getLogger("gui")->error(e.what());
+	}
 }
 
 StackedView::ViewMode StackedView::view_mode() const

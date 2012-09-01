@@ -124,6 +124,14 @@ DiveModel::DiveModel(QObject * parent)
 	ADD_OPTIONAL_COLUMN(int, desat_time, setDesatTime, "Desat Time", new DelegateFactory<MinutesDelegate>, true);
 	ADD_OPTIONAL_COLUMN(int, nofly_time, setNoFlyTime, "No-Fly Time", new DelegateFactory<MinutesDelegate>, true);
 	ADD_OPTIONAL_COLUMN(std::string, algorithm, setAlgorithm, "Algorithm", NULL, true);
+
+	ADD_FIELD_COLUMN(bool, safety_stop, setSafetyStop, "Safety Stop", NULL, true);
+	ADD_OPTIONAL_COLUMN(double, stop_depth, setStopDepth, "Stop Depth", new DelegateFactory<DepthDelegate>, true);
+	ADD_OPTIONAL_COLUMN(int, stop_time, setStopTime, "Stop Time", new DelegateFactory<MinutesDelegate>, true);
+
+	ADD_OPTIONAL_COLUMN(std::string, visibility_category, setVisibilityCategory, "Visibility Category", NULL, true);
+	ADD_OPTIONAL_COLUMN(double, visibility_distance, setVisibilityDistance, "Visibility Distance", new DelegateFactory<DepthDelegate>, true);
+	ADD_OPTIONAL_COLUMN(double, weight, setWeight, "Weight", new DelegateFactory<WeightDelegate>, true);
 }
 
 DiveModel::~DiveModel()

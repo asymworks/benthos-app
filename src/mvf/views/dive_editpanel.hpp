@@ -30,6 +30,7 @@
  */
 
 #include <QAbstractItemDelegate>
+#include <QCheckBox>
 #include <QComboBox>
 #include <QDataWidgetMapper>
 #include <QDateTimeEdit>
@@ -83,8 +84,11 @@ public:
 	virtual QString title() const;
 
 protected:
+	void createComputerPage();
 	void createDivePage();
+	void createExtraPage();
 	void createNotesPage();
+	void createTablePage();
 
 protected slots:
 	void btnNewSiteClicked();
@@ -94,6 +98,9 @@ private:
 	Session::Ptr		m_session;
 
 	QWidget *			m_pgDive;
+	QWidget *			m_pgExtra;
+	QWidget *			m_pgTable;
+	QWidget *			m_pgComputer;
 	QWidget * 			m_pgNotes;
 
 	RatingEdit *		m_reRating;
@@ -116,11 +123,29 @@ private:
 	QuantityEdit *		m_txtAirTemp;
 	QuantityEdit *		m_txtAirStart;
 	QuantityEdit *		m_txtAirEnd;
+	QComboBox *			m_cbxMix;
+
+	QCheckBox *			m_chkStop;
+	QuantityEdit *		m_txtStopDepth;
+	QLineEdit *			m_txtStopTime;
+	QComboBox *			m_cbxVizCategory;
+	QuantityEdit *		m_txtVizDistance;
+	QuantityEdit *		m_txtWeight;
+
+	QComboBox *			m_cbxAlgorithm;
+	QLineEdit *			m_txtStartPG;
+	QLineEdit *			m_txtEndPG;
+	QLineEdit *			m_txtRNT;
+	QLineEdit *			m_txtDesat;
+	QLineEdit *			m_txtNoFly;
+
+	QComboBox * 		m_cbxComputer;
 
 	QTextEdit *			m_txtNotes;
 
 	QAbstractItemModel *	m_SiteFKModel;
 	QAbstractItemModel *	m_ComputerFKModel;
+	QAbstractItemModel *	m_MixFKModel;
 
 };
 

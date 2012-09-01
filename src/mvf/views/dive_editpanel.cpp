@@ -34,7 +34,7 @@
 
 #include <benthos/logbook/dive_computer.hpp>
 #include <benthos/logbook/dive_site.hpp>
-
+#include <benthos/logbook/mix.hpp>
 using namespace benthos::logbook;
 
 class DiveSiteFKModel: public ForeignKeyModel<DiveSite>
@@ -86,16 +86,43 @@ protected:
 
 };
 
+class MixFKModel: public ForeignKeyModel<Mix>
+{
+public:
+	MixFKModel() { }
+	virtual ~MixFKModel() { }
+
+protected:
+	virtual QVariant decorationData(Mix::Ptr item) const
+	{
+		return QVariant();
+	}
+
+	virtual QVariant displayData(Mix::Ptr item) const
+	{
+		if (! item)
+			return QVariant();
+		return QString::fromStdString(item->toString());
+	}
+};
+
 DiveEditPanel::DiveEditPanel(QWidget * parent)
 	: QTabWidget(parent), m_mapper(NULL), m_session()
 {
 	m_SiteFKModel = new DiveSiteFKModel;
 	m_ComputerFKModel = new DiveComputerFKModel;
+	m_MixFKModel = new MixFKModel;
 
 	createDivePage();
+	createExtraPage();
+	createTablePage();
+	createComputerPage();
 	createNotesPage();
 
 	addTab(m_pgDive, tr("Dive"));
+	addTab(m_pgExtra, tr("More"));
+	addTab(m_pgTable, tr("Table"));
+	addTab(m_pgComputer, tr("Computer"));
 	addTab(m_pgNotes, tr("Notes"));
 }
 
@@ -103,6 +130,7 @@ DiveEditPanel::~DiveEditPanel()
 {
 	delete m_SiteFKModel;
 	delete m_ComputerFKModel;
+	delete m_MixFKModel;
 }
 
 void DiveEditPanel::bind(Session::Ptr session, QDataWidgetMapper * mapper)
@@ -131,12 +159,31 @@ void DiveEditPanel::bind(Session::Ptr session, QDataWidgetMapper * mapper)
 	mapper->addMapping(m_txtNotes, 17, "plainText");
 
 	mapper->addMapping(m_cbxSite, 18);
+	mapper->addMapping(m_cbxComputer, 19);
+	mapper->addMapping(m_cbxMix, 20);
+
+	mapper->addMapping(m_txtStartPG, 22);
+	mapper->addMapping(m_txtEndPG, 23);
+	mapper->addMapping(m_txtRNT, 24);
+
+	//mapper->addMapping(m_txtDesat, 25);
+	//mapper->addMapping(m_txtNoFly, 26);
+
+	mapper->addMapping(m_chkStop, 28);
+	mapper->addMapping(m_txtStopDepth, 29);
+	mapper->addMapping(m_txtStopTime, 30);
+
+	mapper->addMapping(m_cbxVizCategory, 31);
+	mapper->addMapping(m_txtVizDistance, 32);
+	mapper->addMapping(m_txtWeight, 33);
 
 	((ForeignKeyModel<DiveSite> *)m_SiteFKModel)->bind(session);
 	((ForeignKeyModel<DiveComputer> *)m_ComputerFKModel)->bind(session);
+	((ForeignKeyModel<Mix> *)m_MixFKModel)->bind(session);
 
 	((QSortFilterProxyModel *)m_cbxSite->model())->sort(0, Qt::AscendingOrder);
-	//((QSortFilterProxyModel *)m_cbxComputer->model())->sort(0, Qt::AscendingOrder);
+	((QSortFilterProxyModel *)m_cbxMix->model())->sort(0, Qt::AscendingOrder);
+	((QSortFilterProxyModel *)m_cbxComputer->model())->sort(0, Qt::AscendingOrder);
 }
 
 void DiveEditPanel::btnNewSiteClicked()
@@ -304,6 +351,16 @@ void DiveEditPanel::createDivePage()
 	QLabel * lblAirEnd = new QLabel(tr("End Pressure"));
 	lblAirEnd->setBuddy(m_txtAirEnd);
 
+	QSortFilterProxyModel * pmdl_mix = new QSortFilterProxyModel(m_pgDive);
+	pmdl_mix->setDynamicSortFilter(true);
+	pmdl_mix->setSortCaseSensitivity(Qt::CaseInsensitive);
+	pmdl_mix->setSourceModel(m_MixFKModel);
+
+	m_cbxMix = new QComboBox(m_pgDive);
+	m_cbxMix->setModel(pmdl_mix);
+	QLabel * lblMix = new QLabel(tr("Gas Mix"), m_pgDive);
+	lblMix->setBuddy(m_cbxMix);
+
 	QGridLayout * gbox3 = new QGridLayout();
 	gbox3->setContentsMargins(0, 0, 0, 0);
 	gbox3->addWidget(lblMaxDepth, 0, 0);
@@ -322,6 +379,8 @@ void DiveEditPanel::createDivePage()
 	gbox3->addWidget(m_txtAirStart, 4, 0);
 	gbox3->addWidget(lblAirEnd, 3, 1);
 	gbox3->addWidget(m_txtAirEnd, 4, 1);
+	gbox3->addWidget(lblMix, 3, 4, 1, 2);
+	gbox3->addWidget(m_cbxMix, 4, 4, 1, 2);
 
 	QVBoxLayout * vbox = new QVBoxLayout();
 	vbox->addLayout(gbox1);
@@ -330,6 +389,153 @@ void DiveEditPanel::createDivePage()
 	vbox->addStretch();
 
 	m_pgDive->setLayout(vbox);
+}
+
+void DiveEditPanel::createExtraPage()
+{
+	m_pgExtra = new QWidget(this);
+
+	m_chkStop = new QCheckBox(tr("Safety Stop"), m_pgExtra);
+
+	m_txtStopDepth = new QuantityEdit(qtDepth, QString(), m_pgExtra);
+	QLabel * lblStopDepth = new QLabel(tr("Stop Depth"));
+	lblStopDepth->setBuddy(m_txtStopDepth);
+
+	//TODO: Make Minutes/Seconds Edit
+	m_txtStopTime = new QLineEdit(QString(), m_pgExtra);
+	QLabel * lblStopTime = new QLabel(tr("Stop Time"));
+	lblStopTime->setBuddy(m_txtStopTime);
+
+	m_cbxVizCategory = new QComboBox(m_pgExtra);
+	m_cbxVizCategory->addItem("excellent");
+	m_cbxVizCategory->addItem("good");
+	m_cbxVizCategory->addItem("fair");
+	m_cbxVizCategory->addItem("poor");
+	QLabel * lblVizCategory = new QLabel(tr("Visibility Category"));
+	lblVizCategory->setBuddy(m_cbxVizCategory);
+
+	m_txtVizDistance = new QuantityEdit(qtDepth, QString(), m_pgExtra);
+	QLabel * lblVizDistance = new QLabel(tr("Visibility Distance"));
+	lblVizDistance->setBuddy(m_txtVizDistance);
+
+	m_txtWeight = new QuantityEdit(qtWeight, QString(), m_pgExtra);
+	QLabel * lblWeight = new QLabel(tr("Weight"));
+	lblWeight->setBuddy(m_txtWeight);
+
+	QGridLayout * gbox1 = new QGridLayout();
+	gbox1->setContentsMargins(0, 0, 0, 0);
+	gbox1->addWidget(m_chkStop, 0, 1);
+	gbox1->addWidget(lblStopDepth, 1, 0);
+	gbox1->addWidget(m_txtStopDepth, 1, 1);
+	gbox1->addWidget(lblStopTime, 2, 0);
+	gbox1->addWidget(m_txtStopTime, 2, 1);
+	gbox1->setRowMinimumHeight(3, 8);
+	gbox1->addWidget(lblVizCategory, 4, 0);
+	gbox1->addWidget(m_cbxVizCategory, 4, 1);
+	gbox1->addWidget(lblVizDistance, 5, 0);
+	gbox1->addWidget(m_txtVizDistance, 5, 1);
+	gbox1->setRowMinimumHeight(6, 8);
+	gbox1->addWidget(lblWeight, 7, 0);
+	gbox1->addWidget(m_txtWeight, 7, 1);
+
+	QVBoxLayout * vbox = new QVBoxLayout();
+	vbox->addLayout(gbox1);
+	vbox->addStretch();
+
+	QHBoxLayout * hbox = new QHBoxLayout();
+	hbox->addLayout(vbox);
+	hbox->addStretch();
+
+	m_pgExtra->setLayout(hbox);
+}
+
+void DiveEditPanel::createTablePage()
+{
+	m_pgTable = new QWidget(this);
+
+	m_cbxAlgorithm = new QComboBox(m_pgTable);
+	m_cbxAlgorithm->setEnabled(false);
+	QLabel * lblAlgorithm = new QLabel(tr("Algorithm"));
+	lblAlgorithm->setBuddy(m_cbxAlgorithm);
+
+	m_txtStartPG = new QLineEdit(m_pgTable);
+	m_txtStartPG->setMaxLength(2);
+	QLabel * lblStartPG = new QLabel(tr("Starting Pressure Group"));
+	lblStartPG->setBuddy(m_txtStartPG);
+
+	m_txtEndPG = new QLineEdit(m_pgTable);
+	m_txtEndPG->setMaxLength(2);
+	QLabel * lblEndPG = new QLabel(tr("Ending Pressure Group"));
+	lblStartPG->setBuddy(m_txtEndPG);
+
+	m_txtRNT = new QLineEdit(m_pgTable);
+	m_txtRNT->setValidator(new QIntValidator(0, 600));
+	QLabel * lblRNT = new QLabel(tr("Residual Nitrogen Time (RNT)"));
+	lblRNT->setBuddy(m_txtRNT);
+
+	m_txtDesat = new QLineEdit(m_pgTable);
+	m_txtDesat->setEnabled(false);
+	QLabel * lblDesat = new QLabel(tr("Desaturation Time"));
+	lblDesat->setBuddy(m_txtDesat);
+
+	m_txtNoFly = new QLineEdit(m_pgTable);
+	m_txtNoFly->setEnabled(false);
+	QLabel * lblNoFly = new QLabel(tr("No-Fly Time"));
+	lblNoFly->setBuddy(m_txtNoFly);
+
+	QGridLayout * gbox1 = new QGridLayout();
+	gbox1->setContentsMargins(0, 0, 0, 0);
+	gbox1->addWidget(lblAlgorithm, 0, 0);
+	gbox1->addWidget(m_cbxAlgorithm, 0, 1);
+	gbox1->setRowMinimumHeight(1, 8);
+	gbox1->addWidget(lblStartPG, 2, 0);
+	gbox1->addWidget(m_txtStartPG, 2, 1);
+	gbox1->addWidget(lblEndPG, 3, 0);
+	gbox1->addWidget(m_txtEndPG, 3, 1);
+	gbox1->addWidget(lblRNT, 4, 0);
+	gbox1->addWidget(m_txtRNT, 4, 1);
+	gbox1->setRowMinimumHeight(5, 8);
+	gbox1->addWidget(lblDesat, 6, 0);
+	gbox1->addWidget(m_txtDesat, 6, 1);
+	gbox1->addWidget(lblNoFly, 7, 0);
+	gbox1->addWidget(m_txtNoFly, 7, 1);
+
+	QVBoxLayout * vbox = new QVBoxLayout();
+	vbox->addLayout(gbox1);
+	vbox->addStretch();
+
+	QHBoxLayout * hbox = new QHBoxLayout();
+	hbox->addLayout(vbox);
+	hbox->addStretch();
+
+	m_pgTable->setLayout(hbox);
+}
+
+void DiveEditPanel::createComputerPage()
+{
+	m_pgComputer = new QWidget(this);
+
+	QSortFilterProxyModel * pmdl = new QSortFilterProxyModel(m_pgComputer);
+	pmdl->setDynamicSortFilter(true);
+	pmdl->setSortCaseSensitivity(Qt::CaseInsensitive);
+	pmdl->setSourceModel(m_ComputerFKModel);
+
+	m_cbxComputer = new QComboBox(m_pgComputer);
+	m_cbxComputer->setMinimumWidth(200);
+	m_cbxComputer->setModel(pmdl);
+	QLabel * lblComputer = new QLabel(tr("Computer"), m_pgComputer);
+	lblComputer->setBuddy(m_cbxComputer);
+
+	QVBoxLayout * vbox = new QVBoxLayout();
+	vbox->addWidget(lblComputer);
+	vbox->addWidget(m_cbxComputer);
+	vbox->addStretch();
+
+	QHBoxLayout * hbox = new QHBoxLayout();
+	hbox->addLayout(vbox);
+	hbox->addStretch();
+
+	m_pgComputer->setLayout(hbox);
 }
 
 void DiveEditPanel::createNotesPage()

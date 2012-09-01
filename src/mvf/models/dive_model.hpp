@@ -68,6 +68,12 @@ using namespace benthos::logbook;
  * 25: Desaturation Time
  * 26: No-Fly Time
  * 27: Algorithm
+ * 28: Safety Stop Flag
+ * 29: Safety Stop Depth
+ * 30: Safety Stop Time
+ * 31: Visibility Category
+ * 32: Visibility Distance
+ * 33: Weight
  */
 class DiveModel: public LogbookQueryModel<Dive>
 {
