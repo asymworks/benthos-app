@@ -65,6 +65,19 @@ DiveProfileView::~DiveProfileView()
 {
 }
 
+void DiveProfileView::clearSelection()
+{
+	if (m_listview && m_listview->selectionModel())
+		m_listview->selectionModel()->clear();
+
+	/*
+	 * FIXME? selectionModel()->clear() does not call QAbstractItemView::currentChanged,
+	 * so MultiColumnListViews are not going to emit any signal here.
+	 */
+	onCurrentIndexChanged(QModelIndex(), QModelIndex());
+	onCurrentSelectionChanged(QItemSelection(), QItemSelection());
+}
+
 QModelIndex DiveProfileView::currentIndex() const
 {
 	return m_listview->currentIndex();
@@ -108,21 +121,28 @@ void DiveProfileView::onSplitterMoved(int arg1, int arg2)
 
 void DiveProfileView::onCurrentIndexChanged(const QModelIndex & current, const QModelIndex & previous)
 {
-	QModelIndex idx(current);
-	QAbstractItemModel * m = (QAbstractItemModel *)idx.model();
-	QSortFilterProxyModel * p = dynamic_cast<QSortFilterProxyModel *>(m);
-	while (p != NULL)
+	if (current.isValid())
 	{
-		idx = p->mapToSource(idx);
-		m = p->sourceModel();
-		p = dynamic_cast<QSortFilterProxyModel *>(m);
+		QModelIndex idx(current);
+		QAbstractItemModel * m = (QAbstractItemModel *)idx.model();
+		QSortFilterProxyModel * p = dynamic_cast<QSortFilterProxyModel *>(m);
+		while (p != NULL)
+		{
+			idx = p->mapToSource(idx);
+			m = p->sourceModel();
+			p = dynamic_cast<QSortFilterProxyModel *>(m);
+		}
+
+		LogbookQueryModel<Dive> * mdl = dynamic_cast<LogbookQueryModel<Dive> *>(m);
+
+		if (! mdl)
+			m_profile->setDive(Dive::Ptr());
+		m_profile->setDive(mdl->item(idx));
 	}
-
-	LogbookQueryModel<Dive> * mdl = dynamic_cast<LogbookQueryModel<Dive> *>(m);
-
-	if (! mdl)
+	else
+	{
 		m_profile->setDive(Dive::Ptr());
-	m_profile->setDive(mdl->item(idx));
+	}
 
 	emit currentIndexChanged(current, previous);
 }

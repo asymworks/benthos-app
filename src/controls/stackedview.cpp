@@ -49,6 +49,24 @@ void StackedView::bind(Logbook::Ptr logbook)
 	m_logbook = logbook;
 }
 
+void StackedView::clearSelection()
+{
+	QAbstractItemView * iv = dynamic_cast<QAbstractItemView *>(currentWidget());
+	if (iv && iv->selectionModel())
+	{
+		iv->selectionModel()->clear();
+		iv->clearSelection();
+		iv->setCurrentIndex(QModelIndex());
+	}
+
+	IBenthosItemView * biv = dynamic_cast<IBenthosItemView *>(currentWidget());
+	if (biv)
+		biv->clearSelection();
+
+	emit currentChanged(QModelIndex(), QModelIndex());
+	emit selectionChanged(QItemSelection(), QItemSelection());
+}
+
 QModelIndex StackedView::currentModelIndex() const
 {
 	QAbstractItemView * iv = dynamic_cast<QAbstractItemView *>(currentWidget());

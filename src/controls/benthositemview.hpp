@@ -41,6 +41,9 @@ struct IBenthosItemView
 {
 	virtual ~IBenthosItemView() { }
 
+	//! @brief Clear Selection
+	virtual void clearSelection() = 0;
+
 	//! @return Current Model Index
 	virtual QModelIndex currentIndex() const = 0;
 

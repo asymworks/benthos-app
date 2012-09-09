@@ -115,14 +115,14 @@ LogbookModel::LogbookModel(QObject * parent)
 	m_items[0]->append(LogbookModelItem::Ptr(new DataSourceItem<Dive>(
 		new AllDivesDataSource,
 		tr("All Dives"),
-		QImage(),
+		QImage(":/icons/diveflag.png"),
 		LogbookModelItem::DiveListItem
 	)));
 
 	m_items[0]->append(LogbookModelItem::Ptr(new DataSourceItem<Dive>(
 		new NullDivesDataSource,
 		tr("Recently Imported"),
-		QImage(),
+		QImage(":/icons/clock.png"),
 		LogbookModelItem::DiveListItem
 	)));
 

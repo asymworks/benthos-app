@@ -715,6 +715,7 @@ void MainWindow::navTreeSelectionChanged(const QModelIndex & selected, const QMo
 		LogbookQueryModel<Dive> * mdl = dynamic_cast<LogbookQueryModel<Dive> *>(m_svDives->model());
 		mdl->bind(m_Logbook->session());
 		mdl->resetFromSource(dsi->source());
+		m_svDives->clearSelection();
 		m_viewStack->setCurrentWidget(m_svDives);
 
 		break;
@@ -729,6 +730,7 @@ void MainWindow::navTreeSelectionChanged(const QModelIndex & selected, const QMo
 		LogbookQueryModel<DiveSite> * mdl = dynamic_cast<LogbookQueryModel<DiveSite> *>(m_svSites->model());
 		mdl->bind(m_Logbook->session());
 		mdl->resetFromSource(dsi->source());
+		m_svSites->clearSelection();
 		m_viewStack->setCurrentWidget(m_svSites);
 
 		break;
@@ -836,10 +838,12 @@ void MainWindow::updateControls()
 {
 	StackedView * sv = dynamic_cast<StackedView *>(m_viewStack->currentWidget());
 
+	//TODO: Fix lots of unsafe pointer code (sv could be 0, sv->selectionModel() could be 0, etc)
+
 	/*
 	 * Dive List Commands
 	 */
-	if (sv == m_svDives)
+	if (sv && (sv == m_svDives))
 	{
 		m_actMergeDives->setEnabled(sv->selectionModel()->selectedRows(0).count() > 1);
 		m_actRenumber->setEnabled(true);
@@ -853,7 +857,10 @@ void MainWindow::updateControls()
 	/*
 	 * Delete Item Command
 	 */
-	m_actDeleteItems->setEnabled(sv->selectionModel()->selectedRows(0).count() > 0);
+	if (sv)
+		m_actDeleteItems->setEnabled(sv->selectionModel()->selectedRows(0).count() > 0);
+	else
+		m_actDeleteItems->setEnabled(false);
 
 	/*
 	 * View Mode Commands

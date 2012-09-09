@@ -55,6 +55,9 @@ public:
 
 public:
 
+	//! @brief Clear Selection
+	virtual void clearSelection();
+
 	//! @return Current Item Index
 	virtual QModelIndex currentIndex() const;
 

@@ -21,8 +21,9 @@
  */
 
 #include <QFrame>
+#include <QLabel>
+#include <QHBoxLayout>
 #include <QVBoxLayout>
-#include <QWidget>
 
 #include <benthos/logbook/profile.hpp>
 #include <benthos/logbook/session.hpp>
@@ -33,12 +34,27 @@ using namespace benthos;
 #include "profile_view.hpp"
 
 ProfileView::ProfileView(QWidget * parent)
-	: QFrame(parent), m_pvPlot(0), m_pvTable(0), m_swView(0)
+	: QFrame(parent), m_pvPlot(0), m_pvTable(0), m_pvBlank(0), m_swView(0)
 {
 	m_pvPlot = new ProfilePlotView;
 	m_pvTable = new ProfileTableView;
 
+	QLabel * logo = new QLabel;
+	logo->setPixmap(QPixmap(":/graphics/hslogo-96.png"));
+	QVBoxLayout * vboxl = new QVBoxLayout;
+	vboxl->setContentsMargins(0, 0, 0, 0);
+	vboxl->addStretch();
+	vboxl->addWidget(logo);
+	QHBoxLayout * hboxl = new QHBoxLayout;
+	hboxl->setContentsMargins(16, 16, 16, 16);
+	hboxl->addLayout(vboxl);
+	hboxl->addStretch();
+
+	m_pvBlank = new QWidget;
+	m_pvBlank->setLayout(hboxl);
+
 	m_swView = new QStackedWidget;
+	m_swView->addWidget(m_pvBlank);
 	m_swView->addWidget(m_pvTable);
 	m_swView->addWidget(m_pvPlot);
 
@@ -62,8 +78,9 @@ void ProfileView::setDive(Dive::Ptr dive)
 {
 	if (! dive)
 	{
-		m_swView->setCurrentWidget(m_pvTable);
+		m_swView->setCurrentWidget(m_pvBlank);
 		m_pvTable->setDive(dive);
+		m_pvPlot->setDive(dive);
 
 		return;
 	}

@@ -120,6 +120,9 @@ public:
 
 public slots:
 
+	//! @brief Clear Selection
+	void clearSelection();
+
 	//! @brief Delete Selected Items
 	void deleteSelection(bool confirm = false);
 

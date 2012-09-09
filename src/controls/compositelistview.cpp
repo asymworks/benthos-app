@@ -31,6 +31,16 @@ CompositeListView::~CompositeListView()
 {
 }
 
+void CompositeListView::clearSelection()
+{
+	QItemSelectionModel * sm = selectionModel();
+	if (sm)
+		sm->clear();
+
+	emit currentChanged(QModelIndex(), QModelIndex());
+	emit selectionChanged(QItemSelection(), QItemSelection());
+}
+
 QModelIndex CompositeListView::currentIndex() const
 {
 	if (! m_view)

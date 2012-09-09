@@ -1,5 +1,6 @@
 <!DOCTYPE RCC><RCC version="1.0">
 <qresource>
 	<file>graphics/dc-unknown.png</file>
+	<file>graphics/hslogo-96.png</file>
 </qresource>
 </RCC>

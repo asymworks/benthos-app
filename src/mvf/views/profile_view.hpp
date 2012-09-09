@@ -32,6 +32,7 @@
 #include <QComboBox>
 #include <QStackedWidget>
 #include <QFrame>
+#include <QWidget>
 
 #include <benthos/logbook/dive.hpp>
 #include <benthos/logbook/profile.hpp>
@@ -66,6 +67,7 @@ public:
 private:
 	ProfilePlotView *	m_pvPlot;
 	ProfileTableView *	m_pvTable;
+	QWidget *			m_pvBlank;
 	QStackedWidget *	m_swView;
 
 };
