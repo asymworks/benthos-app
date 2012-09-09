@@ -88,7 +88,7 @@ void ProfileTableView::paintEvent(QPaintEvent * e)
 		if (m_Dive->end_pressure_group())
 			pgEnd = QString::fromStdString(m_Dive->end_pressure_group().get());
 
-		if (m_Dive->stop_depth())
+		if (m_Dive->safety_stop() && m_Dive->stop_depth())
 		{
 			double sdepth = m_Dive->stop_depth().get();
 			double ddepth = u.conv->fromNative(sdepth);
@@ -110,7 +110,7 @@ void ProfileTableView::paintEvent(QPaintEvent * e)
 					.arg(QString::fromStdWString(u.abbr));
 			}
 		}
-		else if (m_Dive->stop_time())
+		else if (m_Dive->safety_stop() && m_Dive->stop_time())
 		{
 			sstop = QString(tr("%1 min")).arg(m_Dive->stop_time().get());
 		}
