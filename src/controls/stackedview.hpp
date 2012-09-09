@@ -115,6 +115,9 @@ public:
 	//! @param[in] New Filter String
 	void setFilterString(const QString & filter);
 
+	//! @return Summary of Items
+	virtual QString summary() const;
+
 	//! @return Current View Mode
 	ViewMode view_mode() const;
 

@@ -229,6 +229,11 @@ void StackedView::showEditor(const QModelIndex & index)
 	}
 }
 
+QString StackedView::summary() const
+{
+	return QString();
+}
+
 StackedView::ViewMode StackedView::view_mode() const
 {
 	return m_viewMode;

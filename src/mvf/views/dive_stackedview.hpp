@@ -52,6 +52,11 @@ public:
 	//! Class Destructor
 	virtual ~DiveStack();
 
+public:
+
+	//! @return Summary of Items
+	virtual QString summary() const;
+
 protected:
 
 	//! @brief Create Proxy Models

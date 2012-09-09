@@ -189,6 +189,21 @@ void DiveSiteStack::readSettings()
 	StackedView::readSettings();
 }
 
+QString DiveSiteStack::summary() const
+{
+	LogbookQueryModel<DiveSite> * mdl = dynamic_cast<LogbookQueryModel<DiveSite> *>(model());
+	QItemSelectionModel * sm = selectionModel();
+	if (! mdl || ! sm || ! mdl->rowCount())
+		return tr("No Sites");
+
+	if (sm->selectedRows(0).count() > 1)
+		return tr("%1 Sites").arg(sm->selectedRows(0).count());
+	else
+		return tr("%1 Sites").arg(mdl->rowCount());
+
+	return tr("No Sites");
+}
+
 void DiveSiteStack::writeSettings()
 {
 	QSettings s;

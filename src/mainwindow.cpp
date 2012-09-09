@@ -717,6 +717,7 @@ void MainWindow::navTreeSelectionChanged(const QModelIndex & selected, const QMo
 		mdl->resetFromSource(dsi->source());
 		m_svDives->clearSelection();
 		m_viewStack->setCurrentWidget(m_svDives);
+		statusBar()->showMessage(tr("Showing %1").arg(m_svDives->summary()));
 
 		break;
 	}
@@ -732,6 +733,7 @@ void MainWindow::navTreeSelectionChanged(const QModelIndex & selected, const QMo
 		mdl->resetFromSource(dsi->source());
 		m_svSites->clearSelection();
 		m_viewStack->setCurrentWidget(m_svSites);
+		statusBar()->showMessage(tr("Showing %1").arg(m_svSites->summary()));
 
 		break;
 	}
@@ -749,11 +751,13 @@ void MainWindow::navTreeSelectionChanged(const QModelIndex & selected, const QMo
 
 		m_viewStack->setCurrentWidget(m_dvComputer);
 		m_dvComputer->setComputer(dc);
+		statusBar()->clearMessage();
 		break;
 	}
 
 	default:
 		m_viewStack->setCurrentWidget(m_blankWidget);
+		statusBar()->clearMessage();
 		break;
 	}
 
@@ -956,6 +960,17 @@ void MainWindow::viewCurrentChanged(const QModelIndex & current, const QModelInd
 void MainWindow::viewSelectionChanged(const QItemSelection &, const QItemSelection &)
 {
 	updateControls();
+
+	StackedView * sv = dynamic_cast<StackedView *>(m_viewStack->currentWidget());
+	QItemSelectionModel * sm = sv ? sv->selectionModel() : 0;
+
+	if (! sv || ! sm)
+		statusBar()->clearMessage();
+
+	if (sm->selectedRows(0).count() > 1)
+		statusBar()->showMessage(tr("Selected %1").arg(sv->summary()));
+	else
+		statusBar()->showMessage(tr("Showing %1").arg(sv->summary()));
 }
 
 void MainWindow::writeSettings()

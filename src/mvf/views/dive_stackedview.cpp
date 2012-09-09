@@ -116,6 +116,68 @@ void DiveStack::readSettings()
 	StackedView::readSettings();
 }
 
+QString DiveStack::summary() const
+{
+	LogbookQueryModel<Dive> * mdl = dynamic_cast<LogbookQueryModel<Dive> *>(model());
+	QItemSelectionModel * sm = selectionModel();
+	if (! mdl || ! sm || ! mdl->rowCount())
+		return tr("No Dives");
+
+	std::vector<Dive::Ptr> dives;
+	std::vector<Dive::Ptr>::const_iterator it;
+	if (sm->selectedRows(0).count() > 1)
+	{
+		QModelIndexList items = sm->selectedRows(0);
+		for (int i = items.count() - 1; i > -1; --i)
+		{
+			QModelIndex idx(items.at(i));
+			QAbstractItemModel * m = (QAbstractItemModel *)idx.model();
+			QSortFilterProxyModel * p = dynamic_cast<QSortFilterProxyModel *>(m);
+			while (p != NULL)
+			{
+				idx = p->mapToSource(idx);
+				m = p->sourceModel();
+				p = dynamic_cast<QSortFilterProxyModel *>(m);
+			}
+
+			LogbookQueryModel<Dive> * lqm = dynamic_cast<LogbookQueryModel<Dive> *>(m);
+			if (! lqm)
+				continue;
+
+			dives.push_back(lqm->item(idx));
+		}
+	}
+	else
+	{
+		dives = mdl->items();
+	}
+
+	if (! dives.size())
+		return tr("No Dives");
+
+	int t = 0;
+	for (it = dives.begin(); it != dives.end(); it++)
+		t += (* it)->duration();
+
+	int days = t / 1400;
+	int hours = (t % 1440) / 60;
+	int minutes = t % 60;
+
+	QString sdays = QString(days == 1 ? tr("%1 day") : tr("%1 days")).arg(days);
+	QString shours = QString(hours == 1 ? tr("%1 hour") : tr("%1 hours")).arg(hours);
+	QString sminutes = QString(minutes == 1 ? tr("%1 minute") : tr("%1 minutes")).arg(minutes);
+	QString duration;
+
+	if (days > 0)
+		duration = QString("%1, %2, %3").arg(sdays).arg(shours).arg(sminutes);
+	else if (hours > 0)
+		duration = QString("%1, %2").arg(shours).arg(sminutes);
+	else
+		duration = sminutes;
+
+	return tr("%1 Dives: %2").arg(dives.size()).arg(duration);
+}
+
 void DiveStack::writeSettings()
 {
 	QSettings s;

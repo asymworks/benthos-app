@@ -74,6 +74,7 @@ using namespace benthos::logbook;
  * 31: Visibility Category
  * 32: Visibility Distance
  * 33: Weight
+ * 34: Imported Date/Time
  */
 class DiveModel: public LogbookQueryModel<Dive>
 {

@@ -42,6 +42,26 @@ struct AllDivesDataSource: public ILogbookDataSource<Dive>
 };
 
 /*
+ * Data Source for Recently Imported Dives
+ */
+struct RecentDivesDataSource: public ILogbookDataSource<Dive>
+{
+	int		days;
+	int		max;
+
+	RecentDivesDataSource(int days_ = 30, int max_ = 25)
+		: days(days_), max(max_)
+	{
+	}
+
+	virtual std::vector<Dive::Ptr> getItems(Session::Ptr session) const
+	{
+		IDiveFinder::Ptr df = boost::dynamic_pointer_cast<IDiveFinder>(session->finder<Dive>());
+		return df->findRecentlyImported(days, max);
+	}
+};
+
+/*
  * Data Source for Dives starting from a given Date Range through Today
  */
 struct DateRangeDiveDataSource2: public ILogbookDataSource<Dive>
@@ -120,7 +140,7 @@ LogbookModel::LogbookModel(QObject * parent)
 	)));
 
 	m_items[0]->append(LogbookModelItem::Ptr(new DataSourceItem<Dive>(
-		new NullDivesDataSource,
+		new RecentDivesDataSource,
 		tr("Recently Imported"),
 		QImage(":/icons/clock.png"),
 		LogbookModelItem::DiveListItem
