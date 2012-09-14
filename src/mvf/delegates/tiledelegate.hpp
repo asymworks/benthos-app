@@ -96,21 +96,10 @@ protected:
 	template <class T>
 	static boost::shared_ptr<T> rowObject(const QModelIndex & index)
 	{
-		QModelIndex idx(index);
-		QAbstractItemModel * m = (QAbstractItemModel *)idx.model();
-		QSortFilterProxyModel * p = dynamic_cast<QSortFilterProxyModel *>(m);
-		while (p != NULL)
-		{
-			idx = p->mapToSource(idx);
-			m = p->sourceModel();
-			p = dynamic_cast<QSortFilterProxyModel *>(m);
-		}
-
-		LogbookQueryModel<T> * mdl = dynamic_cast<LogbookQueryModel<T> *>(m);
-
-		if (mdl == NULL)
+		QModelIndex idx = removeProxyModels<LogbookQueryModel<T> >(index);
+		if (! idx.isValid())
 			return boost::shared_ptr<T>();
-		return mdl->item(idx);
+		return ((LogbookQueryModel<T> *)idx.model())->item(idx);
 	}
 
 	//! @return Content Size

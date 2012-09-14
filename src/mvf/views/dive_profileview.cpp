@@ -123,21 +123,10 @@ void DiveProfileView::onCurrentIndexChanged(const QModelIndex & current, const Q
 {
 	if (current.isValid())
 	{
-		QModelIndex idx(current);
-		QAbstractItemModel * m = (QAbstractItemModel *)idx.model();
-		QSortFilterProxyModel * p = dynamic_cast<QSortFilterProxyModel *>(m);
-		while (p != NULL)
-		{
-			idx = p->mapToSource(idx);
-			m = p->sourceModel();
-			p = dynamic_cast<QSortFilterProxyModel *>(m);
-		}
-
-		LogbookQueryModel<Dive> * mdl = dynamic_cast<LogbookQueryModel<Dive> *>(m);
-
-		if (! mdl)
+		QModelIndex idx = removeProxyModels<LogbookQueryModel<Dive> >(current);
+		if (! idx.isValid())
 			m_profile->setDive(Dive::Ptr());
-		m_profile->setDive(mdl->item(idx));
+		m_profile->setDive(((LogbookQueryModel<Dive> *)idx.model())->item(idx));
 	}
 	else
 	{

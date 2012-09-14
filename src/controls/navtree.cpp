@@ -67,8 +67,11 @@ NavTree::NavTree(QWidget * parent)
 	setHeaderHidden(true);
 	setItemDelegate(new LogbookDelegate(this));
 	setItemsExpandable(false);
+	setMaximumWidth(200);
+	setMinimumWidth(150);
 	setSelectionBehavior(QAbstractItemView::SelectRows);
 	setSelectionMode(QAbstractItemView::SingleSelection);
+	setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Ignored);
 	setStyleSheet(stylesheet);
 }
 

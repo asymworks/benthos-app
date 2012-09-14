@@ -130,21 +130,10 @@ QString DiveStack::summary() const
 		QModelIndexList items = sm->selectedRows(0);
 		for (int i = items.count() - 1; i > -1; --i)
 		{
-			QModelIndex idx(items.at(i));
-			QAbstractItemModel * m = (QAbstractItemModel *)idx.model();
-			QSortFilterProxyModel * p = dynamic_cast<QSortFilterProxyModel *>(m);
-			while (p != NULL)
-			{
-				idx = p->mapToSource(idx);
-				m = p->sourceModel();
-				p = dynamic_cast<QSortFilterProxyModel *>(m);
-			}
-
-			LogbookQueryModel<Dive> * lqm = dynamic_cast<LogbookQueryModel<Dive> *>(m);
-			if (! lqm)
+			QModelIndex idx = removeProxyModels<LogbookQueryModel<Dive> >(items.at(i));
+			if (! idx.isValid())
 				continue;
-
-			dives.push_back(lqm->item(idx));
+			dives.push_back(((LogbookQueryModel<Dive> *)idx.model())->item(idx));
 		}
 	}
 	else

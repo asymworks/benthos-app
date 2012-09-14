@@ -23,12 +23,16 @@
 #include <QGridLayout>
 #include <QIntValidator>
 #include <QLabel>
+#include <QRegExp>
+#include <QRegExpValidator>
 #include <QSettings>
 #include <QSortFilterProxyModel>
 #include <QVBoxLayout>
 
 #include "mvf/adapters.hpp"
 #include "mvf/countrymodel.hpp"
+#include "mvf/models.hpp"
+#include "mvf/models/divetags_model.hpp"
 
 #include "dive_editpanel.hpp"
 
@@ -117,12 +121,14 @@ DiveEditPanel::DiveEditPanel(QWidget * parent)
 	createExtraPage();
 	createTablePage();
 	createComputerPage();
+	createTagsPage();
 	createNotesPage();
 
 	addTab(m_pgDive, tr("Dive"));
 	addTab(m_pgExtra, tr("More"));
 	addTab(m_pgTable, tr("Table"));
 	addTab(m_pgComputer, tr("Computer"));
+	addTab(m_pgTags, tr("Tags"));
 	addTab(m_pgNotes, tr("Notes"));
 }
 
@@ -135,8 +141,16 @@ DiveEditPanel::~DiveEditPanel()
 
 void DiveEditPanel::bind(Session::Ptr session, QDataWidgetMapper * mapper)
 {
+	if (m_mapper)
+		disconnect(m_mapper, SIGNAL(currentIndexChanged(int)), this, SLOT(mapperIndexChanged(int)));
+
 	m_session = session;
 	m_mapper = mapper;
+
+	if (! m_mapper)
+		return;
+
+	connect(mapper, SIGNAL(currentIndexChanged(int)), this, SLOT(mapperIndexChanged(int)));
 
 	mapper->clearMapping();
 
@@ -184,6 +198,21 @@ void DiveEditPanel::bind(Session::Ptr session, QDataWidgetMapper * mapper)
 	((QSortFilterProxyModel *)m_cbxSite->model())->sort(0, Qt::AscendingOrder);
 	((QSortFilterProxyModel *)m_cbxMix->model())->sort(0, Qt::AscendingOrder);
 	((QSortFilterProxyModel *)m_cbxComputer->model())->sort(0, Qt::AscendingOrder);
+}
+
+void DiveEditPanel::btnAddTagClicked()
+{
+	if (m_txtNewTag->text().isEmpty())
+		return;
+
+	std::string tag = m_txtNewTag->text().toStdString();
+	m_txtNewTag->clear();
+
+	DiveTagsModel * tm = dynamic_cast<DiveTagsModel *>(m_TagsModel);
+	if (! tm)
+		return;
+
+	tm->addTag(tag);
 }
 
 void DiveEditPanel::btnNewSiteClicked()
@@ -538,6 +567,39 @@ void DiveEditPanel::createComputerPage()
 	m_pgComputer->setLayout(hbox);
 }
 
+void DiveEditPanel::createTagsPage()
+{
+	m_pgTags = new QWidget(this);
+	m_TagsModel = new DiveTagsModel;
+
+	m_lstTags = new QListView(m_pgTags);
+	m_lstTags->setModel(m_TagsModel);
+
+	m_txtNewTag = new QLineEdit(m_pgTags);
+	m_txtNewTag->setValidator(new QRegExpValidator(QRegExp("\\w*")));
+
+	m_btnAddTag = new QPushButton(tr("Add Tag"));
+	m_btnAddTag->setAutoDefault(false);
+	m_btnAddTag->setDefault(false);
+	connect(m_btnAddTag, SIGNAL(clicked()), this, SLOT(btnAddTagClicked()));
+	connect(m_txtNewTag, SIGNAL(returnPressed()), this, SLOT(btnAddTagClicked()));
+
+	QHBoxLayout * hbox1 = new QHBoxLayout();
+	hbox1->addWidget(m_btnAddTag);
+	hbox1->addStretch();
+
+	QVBoxLayout * vbox = new QVBoxLayout();
+	vbox->addWidget(m_txtNewTag);
+	vbox->addLayout(hbox1);
+	vbox->addStretch();
+
+	QHBoxLayout * hbox = new QHBoxLayout();
+	hbox->addWidget(m_lstTags, 1);
+	hbox->addLayout(vbox, 0);
+
+	m_pgTags->setLayout(hbox);
+}
+
 void DiveEditPanel::createNotesPage()
 {
 	m_pgNotes = new QWidget(this);
@@ -547,6 +609,21 @@ void DiveEditPanel::createNotesPage()
 	vbox->addWidget(m_txtNotes);
 
 	m_pgNotes->setLayout(vbox);
+}
+
+void DiveEditPanel::mapperIndexChanged(int index)
+{
+	QModelIndex idx = removeProxyModels<LogbookQueryModel<Dive> >(m_mapper->model()->index(index, 0));
+	if (! idx.isValid())
+		((DiveTagsModel *)m_TagsModel)->setDive(Dive::Ptr());
+	else
+	{
+		LogbookQueryModel<Dive> * mdl = const_cast<LogbookQueryModel<Dive> *>(dynamic_cast<const LogbookQueryModel<Dive> *>(idx.model()));
+		if (! mdl)
+			((DiveTagsModel *)m_TagsModel)->setDive(Dive::Ptr());
+		else
+			((DiveTagsModel *)m_TagsModel)->setDive(mdl->item(idx));
+	}
 }
 
 QString DiveEditPanel::title() const

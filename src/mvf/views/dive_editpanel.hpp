@@ -30,10 +30,12 @@
  */
 
 #include <QAbstractItemDelegate>
+#include <QAbstractListModel>
 #include <QCheckBox>
 #include <QComboBox>
 #include <QDataWidgetMapper>
 #include <QDateTimeEdit>
+#include <QListView>
 #include <QLineEdit>
 #include <QPushButton>
 #include <QTabWidget>
@@ -89,9 +91,12 @@ protected:
 	void createExtraPage();
 	void createNotesPage();
 	void createTablePage();
+	void createTagsPage();
 
 protected slots:
+	void btnAddTagClicked();
 	void btnNewSiteClicked();
+	void mapperIndexChanged(int);
 
 private:
 	QDataWidgetMapper *	m_mapper;
@@ -101,6 +106,7 @@ private:
 	QWidget *			m_pgExtra;
 	QWidget *			m_pgTable;
 	QWidget *			m_pgComputer;
+	QWidget *			m_pgTags;
 	QWidget * 			m_pgNotes;
 
 	RatingEdit *		m_reRating;
@@ -141,11 +147,17 @@ private:
 
 	QComboBox * 		m_cbxComputer;
 
+	QListView *			m_lstTags;
+	QLineEdit *			m_txtNewTag;
+	QPushButton * 		m_btnAddTag;
+
 	QTextEdit *			m_txtNotes;
 
 	QAbstractItemModel *	m_SiteFKModel;
 	QAbstractItemModel *	m_ComputerFKModel;
 	QAbstractItemModel *	m_MixFKModel;
+
+	QAbstractListModel *	m_TagsModel;
 
 };
 

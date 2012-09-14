@@ -118,21 +118,10 @@ void MainWindow::actMergeDivesTriggered()
 
 	for (int i = items.count() - 1; i > -1; --i)
 	{
-		QModelIndex idx(items.at(i));
-		QAbstractItemModel * m = (QAbstractItemModel *)idx.model();
-		QSortFilterProxyModel * p = dynamic_cast<QSortFilterProxyModel *>(m);
-		while (p != NULL)
-		{
-			idx = p->mapToSource(idx);
-			m = p->sourceModel();
-			p = dynamic_cast<QSortFilterProxyModel *>(m);
-		}
-
-		LogbookQueryModel<Dive> * lqm = dynamic_cast<LogbookQueryModel<Dive> *>(m);
-		if (! lqm)
+		QModelIndex idx = removeProxyModels<LogbookQueryModel<Dive> >(items.at(i));
+		if (! idx.isValid())
 			continue;
-
-		dives.push_back(lqm->item(idx));
+		dives.push_back(((LogbookQueryModel<Dive> *)idx.model())->item(idx));
 	}
 
 	// Confirm the Merge
@@ -335,21 +324,10 @@ void MainWindow::actRenumberTriggered()
 
 		for (int i = 0; i < m_svDives->model()->rowCount(); ++i)
 		{
-			QModelIndex idx(m_svDives->model()->index(i, 0, QModelIndex()));
-			QAbstractItemModel * m = (QAbstractItemModel *)idx.model();
-			QSortFilterProxyModel * p = dynamic_cast<QSortFilterProxyModel *>(m);
-			while (p != NULL)
-			{
-				idx = p->mapToSource(idx);
-				m = p->sourceModel();
-				p = dynamic_cast<QSortFilterProxyModel *>(m);
-			}
-
-			LogbookQueryModel<Dive> * lqm = dynamic_cast<LogbookQueryModel<Dive> *>(m);
-			if (! lqm)
+			QModelIndex idx = removeProxyModels<LogbookQueryModel<Dive> >(items.at(i));
+			if (! idx.isValid())
 				continue;
-
-			dives.push_back(lqm->item(idx));
+			dives.push_back(((LogbookQueryModel<Dive> *)idx.model())->item(idx));
 		}
 	}
 	else
@@ -357,21 +335,10 @@ void MainWindow::actRenumberTriggered()
 		// Renumber Selected dives
 		for (int i = items.count() - 1; i > -1; --i)
 		{
-			QModelIndex idx(items.at(i));
-			QAbstractItemModel * m = (QAbstractItemModel *)idx.model();
-			QSortFilterProxyModel * p = dynamic_cast<QSortFilterProxyModel *>(m);
-			while (p != NULL)
-			{
-				idx = p->mapToSource(idx);
-				m = p->sourceModel();
-				p = dynamic_cast<QSortFilterProxyModel *>(m);
-			}
-
-			LogbookQueryModel<Dive> * lqm = dynamic_cast<LogbookQueryModel<Dive> *>(m);
-			if (! lqm)
+			QModelIndex idx = removeProxyModels<LogbookQueryModel<Dive> >(items.at(i));
+			if (! idx.isValid())
 				continue;
-
-			dives.push_back(lqm->item(idx));
+			dives.push_back(((LogbookQueryModel<Dive> *)idx.model())->item(idx));
 		}
 	}
 
@@ -861,7 +828,7 @@ void MainWindow::updateControls()
 	/*
 	 * Delete Item Command
 	 */
-	if (sv)
+	if (sv && sv->selectionModel())
 		m_actDeleteItems->setEnabled(sv->selectionModel()->selectedRows(0).count() > 0);
 	else
 		m_actDeleteItems->setEnabled(false);
@@ -965,7 +932,10 @@ void MainWindow::viewSelectionChanged(const QItemSelection &, const QItemSelecti
 	QItemSelectionModel * sm = sv ? sv->selectionModel() : 0;
 
 	if (! sv || ! sm)
+	{
 		statusBar()->clearMessage();
+		return;
+	}
 
 	if (sm->selectedRows(0).count() > 1)
 		statusBar()->showMessage(tr("Selected %1").arg(sv->summary()));

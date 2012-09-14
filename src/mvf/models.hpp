@@ -32,6 +32,7 @@
 #include <boost/any.hpp>
 #include <boost/signals2.hpp>
 
+#include <QAbstractProxyModel>
 #include <QAbstractTableModel>
 #include <QObject>
 
@@ -42,6 +43,34 @@
 #include <benthos/logbook/session.hpp>
 
 using namespace benthos::logbook;
+
+/**
+ * @brief Map a Model Index back through Proxy Models to its Root Model
+ * @param[in] Index to Back-Map
+ * @return Back-Mapped Index
+ *
+ * This method walks back through a list of QAbstractProxyModels, to return
+ * the index for the first non-proxy model.  If a template class is given,
+ * the method will expect the non-proxy model to be of the given class, and
+ * if it is not, an invalid index is returned.
+ */
+template <class T = QAbstractItemModel>
+QModelIndex removeProxyModels(const QModelIndex & index)
+{
+	QModelIndex idx(index);
+	QAbstractItemModel * m = (QAbstractItemModel *)idx.model();
+	QAbstractProxyModel * p = dynamic_cast<QAbstractProxyModel *>(m);
+	while (p != NULL)
+	{
+		idx = p->mapToSource(idx);
+		m = p->sourceModel();
+		p = dynamic_cast<QAbstractProxyModel *>(m);
+	}
+
+	if (! dynamic_cast<T *>(m))
+		return QModelIndex();
+	return idx;
+}
 
 /**
  * @brief Custom Table Model

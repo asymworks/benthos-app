@@ -52,6 +52,7 @@ set( BENTHOS_SRCS
 	mvf/delegates/site_tiledelegate.cpp
 	mvf/delegates/tiledelegate.cpp
 	mvf/models/dive_model.cpp
+	mvf/models/divetags_model.cpp
 	mvf/models/drivermodels_model.cpp
 	mvf/models/driverparams_model.cpp
 	mvf/models/logbook_item.cpp
@@ -98,6 +99,7 @@ set( BENTHOS_MOC_HDRS
 	dialogs/modeleditdialog.hpp
 	dialogs/transferdialog.hpp
 	mvf/models.hpp
+	mvf/models/divetags_model.hpp
 	mvf/models/sys/udevserialportmodel.hpp
 	mvf/views/computer_view.hpp
 	mvf/views/dive_editpanel.hpp

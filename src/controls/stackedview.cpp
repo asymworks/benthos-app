@@ -29,6 +29,7 @@
 
 #include "compositelistview.hpp"
 #include "dialogs/modeleditdialog.hpp"
+#include "mvf/models.hpp"
 
 #include "benthositemview.hpp"
 #include "stackedview.hpp"
@@ -109,17 +110,13 @@ void StackedView::deleteSelection(bool confirm)
 	qSort(items.begin(), items.end());
 	for (int i = items.count() - 1; i > -1; --i)
 	{
-		QModelIndex idx(items.at(i));
-		QAbstractItemModel * m = (QAbstractItemModel *)idx.model();
-		QSortFilterProxyModel * p = dynamic_cast<QSortFilterProxyModel *>(m);
-		while (p != NULL)
-		{
-			idx = p->mapToSource(idx);
-			m = p->sourceModel();
-			p = dynamic_cast<QSortFilterProxyModel *>(m);
-		}
+		QModelIndex idx = removeProxyModels(items.at(i));
+		if (idx.isValid())
+			return;
 
-		m->removeRow(idx.row());
+		QAbstractItemModel * mdl = const_cast<QAbstractItemModel *>(idx.model());
+		if (mdl)
+			mdl->removeRow(idx.row());
 	}
 
 	m_logbook->session()->commit();
