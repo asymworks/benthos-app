@@ -42,6 +42,7 @@ set( BENTHOS_SRCS
 	dialogs/driverparamsdialog.cpp
 	dialogs/modeladddialog.cpp
 	dialogs/modeleditdialog.cpp
+	dialogs/tanksmixdialog.cpp
 	dialogs/transferdialog.cpp
 	mvf/countrymodel.cpp
 	mvf/delegates.cpp
@@ -57,7 +58,9 @@ set( BENTHOS_SRCS
 	mvf/models/driverparams_model.cpp
 	mvf/models/logbook_item.cpp
 	mvf/models/logbook_model.cpp
+	mvf/models/mix_model.cpp
 	mvf/models/site_model.cpp
+	mvf/models/tank_model.cpp
 	mvf/models/sys/udevserialportmodel.cpp
 	mvf/views/computer_view.cpp
 	mvf/views/dive_editpanel.cpp
@@ -70,6 +73,7 @@ set( BENTHOS_SRCS
 	mvf/views/site_editpanel.cpp
 	mvf/views/site_mapview.cpp
 	mvf/views/site_stackedview.cpp
+	util/deletekeyfilter.cpp
 	util/qcustomplot.cpp
 	util/qticonloader.cpp
 	util/units.cpp
@@ -97,6 +101,7 @@ set( BENTHOS_MOC_HDRS
 	dialogs/driverparamsdialog.hpp
 	dialogs/modeladddialog.hpp
 	dialogs/modeleditdialog.hpp
+	dialogs/tanksmixdialog.hpp
 	dialogs/transferdialog.hpp
 	mvf/models.hpp
 	mvf/models/divetags_model.hpp
@@ -111,6 +116,7 @@ set( BENTHOS_MOC_HDRS
 	mvf/views/site_editpanel.hpp
 	mvf/views/site_mapview.hpp
 	mvf/views/site_stackedview.hpp
+	util/deletekeyfilter.hpp
 	util/qcustomplot.h
 	wizards/addcomputerwizard.hpp
 	wizards/addcomputer/configpage.hpp

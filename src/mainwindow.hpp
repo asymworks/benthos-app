@@ -131,6 +131,7 @@ private slots:
 	void actDeleteItemsTriggered();
 	void actMergeDivesTriggered();
 	void actRenumberTriggered();
+	void actManageTanksMixesTriggered();
 
 	void navTreeSelectionChanged(const QModelIndex &, const QModelIndex &);
 	void txtFilterChanged(const QString &);
@@ -151,6 +152,7 @@ private:
 	QAction *				m_actDeleteItems;
 	QAction *				m_actMergeDives;
 	QAction *				m_actRenumber;
+	QAction *				m_actManageTanksMixes;
 
 	QAction *				m_actViewCF;
 	QAction *				m_actViewTiled;

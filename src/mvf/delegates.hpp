@@ -293,6 +293,16 @@ public:
 };
 
 /**
+ * @brief Volume Formatting Delegate
+ */
+class VolumeDelegate: public UnitDelegate
+{
+public:
+	VolumeDelegate(QObject * parent = 0) : UnitDelegate(qtVolume, "Liters", parent) { }
+	virtual ~VolumeDelegate() { }
+};
+
+/**
  * @brief Weight Formatting Delegate
  */
 class WeightDelegate: public UnitDelegate
@@ -335,6 +345,30 @@ public:
 
 	//! Return the Display Text
 	virtual QString displayText(const QVariant & value, const QLocale & locale) const;
+
+};
+
+/**
+ * @brief Per-Mil Delegate
+ */
+class PerMilDelegate: public NoFocusDelegate
+{
+public:
+
+	//! Class Constructor
+	PerMilDelegate(QObject * parent = 0);
+
+	//! Class Destructor
+	virtual ~PerMilDelegate();
+
+	//! Return the Display Text
+	virtual QString displayText(const QVariant & value, const QLocale & locale) const;
+
+	//! @brief Set Editor Data
+	virtual void setEditorData(QWidget * editor, const QModelIndex & index) const;
+
+	//! @brief Set Model Data
+	virtual void setModelData(QWidget * editor, QAbstractItemModel * model, const QModelIndex & index) const;
 
 };
 

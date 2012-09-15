@@ -27,6 +27,7 @@
 #include <QApplication>
 #include <QComboBox>
 #include <QDateTime>
+#include <QLineEdit>
 #include <QLocale>
 #include <QModelIndex>
 #include <QPainter>
@@ -311,4 +312,48 @@ QString MinutesDelegate::displayText(const QVariant & value, const QLocale & loc
 	char buf[255];
 	sprintf(buf, "%d:%02d", h, m);
 	return QString(buf);
+}
+
+PerMilDelegate::PerMilDelegate(QObject * parent)
+	: NoFocusDelegate(parent)
+{
+}
+
+PerMilDelegate::~PerMilDelegate()
+{
+}
+
+QString PerMilDelegate::displayText(const QVariant & value, const QLocale & locale) const
+{
+	int permil = value.toUInt();
+	return QString("%1.%2 %%").arg(permil / 10).arg(permil % 10);
+}
+
+void PerMilDelegate::setEditorData(QWidget * editor, const QModelIndex & index) const
+{
+	QLineEdit * le = dynamic_cast<QLineEdit *>(editor);
+	if (le)
+	{
+		int permil = index.data(Qt::EditRole).toUInt();
+		le->setText(QString("%1.%2 %%").arg(permil / 10).arg(permil % 10));
+	}
+	else
+	{
+		NoFocusDelegate::setEditorData(editor, index);
+	}
+}
+
+void PerMilDelegate::setModelData(QWidget * editor, QAbstractItemModel * model, const QModelIndex & index) const
+{
+	QLineEdit * le = dynamic_cast<QLineEdit *>(editor);
+	if (le)
+	{
+		QString spct = le->text();
+		double pct = spct.toDouble();
+		model->setData(index, QVariant((int)(round(pct * 10))), Qt::EditRole);
+	}
+	else
+	{
+		NoFocusDelegate::setModelData(editor, model, index);
+	}
 }

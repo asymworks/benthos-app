@@ -166,7 +166,5 @@ void DiveTagsModel::setDive(Dive::Ptr dive)
 		m_divetags.insert(dtags.begin(), dtags.end());
 	}
 
-	printf("m_divetags.size() = %d\n", m_divetags.size());
-
 	endResetModel();
 }

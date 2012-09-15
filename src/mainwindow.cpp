@@ -42,6 +42,7 @@
 
 #include "dialogs/modeladddialog.hpp"
 #include "dialogs/modeleditdialog.hpp"
+#include "dialogs/tanksmixdialog.hpp"
 
 #include "mvf/models/dive_model.hpp"
 #include "mvf/views/dive_stackedview.hpp"
@@ -101,6 +102,12 @@ void MainWindow::actDeleteItemsTriggered()
 	StackedView * sv = dynamic_cast<StackedView *>(m_viewStack->currentWidget());
 	if (sv)
 		sv->deleteSelection(true);
+}
+
+void MainWindow::actManageTanksMixesTriggered()
+{
+	TanksMixDialog dlg(m_Logbook, this);
+	dlg.exec();
 }
 
 void MainWindow::actMergeDivesTriggered()
@@ -370,6 +377,7 @@ void MainWindow::actSetImperialTriggered()
 	s.setValue(QString("Unit%1").arg(qtTemperature), "Farenheit");
 	s.setValue(QString("Unit%1").arg(qtPressure), "PSI");
 	s.setValue(QString("Unit%1").arg(qtWeight), "Pounds");
+	s.setValue(QString("Unit%1").arg(qtVolume), "Cubic Feet");
 	s.endGroup();
 
 	update();
@@ -385,6 +393,7 @@ void MainWindow::actSetMetricTriggered()
 	s.setValue(QString("Unit%1").arg(qtTemperature), "Celsius");
 	s.setValue(QString("Unit%1").arg(qtPressure), "Bar");
 	s.setValue(QString("Unit%1").arg(qtWeight), "Kilograms");
+	s.setValue(QString("Unit%1").arg(qtVolume), "Liters");
 	s.endGroup();
 
 	update();
@@ -464,6 +473,10 @@ void MainWindow::createActions()
 	m_actRenumber = new QAction(tr("&Renumber Dives..."), this);
 	m_actRenumber->setStatusTip(tr("Renumber the selected dives"));
 	connect(m_actRenumber, SIGNAL(triggered()), this, SLOT(actRenumberTriggered()));
+
+	m_actManageTanksMixes = new QAction(tr("Manage &Tanks and Mixes..."), this);
+	m_actManageTanksMixes->setStatusTip(tr("Manage Tanks and Breathing Mixes in the Logbook"));
+	connect(m_actManageTanksMixes, SIGNAL(triggered()), this, SLOT(actManageTanksMixesTriggered()));
 
 	/*
 	 * Toolbar Actions
@@ -635,6 +648,8 @@ void MainWindow::createMenus()
 	m_logbookMenu->addSeparator();
 	m_logbookMenu->addAction(m_actMergeDives);
 	m_logbookMenu->addAction(m_actRenumber);
+	m_logbookMenu->addSeparator();
+	m_logbookMenu->addAction(m_actManageTanksMixes);
 
 	m_unitMenu = new QMenu(tr("Display &Units"));
 	m_unitMenu->addAction(m_actSetMetric);

@@ -106,6 +106,10 @@ void _registerUnits()
 	// Register Weight Units
 	registerUnit(qtWeight, "Kilograms", L"kg", new LinearUnitConverter(1));
 	registerUnit(qtWeight, "Pounds", L"lb", new LinearUnitConverter(2.20462));
+
+	// Register Volume Units
+	registerUnit(qtVolume, "Liters", L"L", new LinearUnitConverter(1));
+	registerUnit(qtVolume, "Cubic Feet", L"cu ft", new LinearUnitConverter(0.035315));
 }
 
 class _unit_initdata
@@ -150,7 +154,7 @@ const std::vector<unit_t> & registeredUnits(quantity_t quantity)
 
 unit_t findUnit(quantity_t q, const char * name)
 {
-	if (! strlen(name))
+	if (! name || ! strlen(name))
 		return *_libdata._unit_map[q].begin();
 
 	unit_list_t::const_iterator it;

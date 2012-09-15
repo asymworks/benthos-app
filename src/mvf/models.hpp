@@ -131,6 +131,18 @@ struct ILogbookDataSource
 };
 
 /**
+ * @brief Default Data Source Functor
+ */
+template <class T>
+struct DefaultDataSource: public ILogbookDataSource<T>
+{
+	virtual ~DefaultDataSource() { }
+
+	//! @return List of Items
+	virtual std::vector<typename T::Ptr> getItems(Session::Ptr session) const { return session->finder<T>()->find(); }
+};
+
+/**
  * @brief LiteSQL Data Source Model
  */
 template <class T>

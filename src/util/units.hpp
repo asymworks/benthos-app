@@ -46,6 +46,7 @@ enum quantity_t
 	qtHeartrate,
 	qtHeading,
 	qtWeight,
+	qtVolume,
 };
 
 /**
