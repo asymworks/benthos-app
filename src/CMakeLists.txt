@@ -204,3 +204,11 @@ target_link_libraries( benthos
 	${BENTHOS_DC_LDFLAGS}
 	${UDEV_LIBS}
 )
+
+# Install Benthos
+install(TARGETS benthos 
+	DESTINATION bin
+)
+
+# Install Shared Files
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/share/graphics/dc/ DESTINATION ${BENTHOS_DATADIR}/graphics/dc PATTERN "*.png")
