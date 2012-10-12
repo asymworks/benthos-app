@@ -48,3 +48,7 @@ SET(BENTHOS_DATADIR		"${CMAKE_INSTALL_PREFIX}/share/benthos")
 
 # Run Subdirectories
 add_subdirectory( src )
+
+# Install top-level files
+install(FILES ${CMAKE_SOURCE_DIR}/LICENSE DESTINATION share/benthos/)
+install(FILES ${CMAKE_SOURCE_DIR}/README DESTINATION share/benthos/)

@@ -39,8 +39,8 @@
 
 #include "util/deletekeyfilter.hpp"
 
-TanksMixDialog::TanksMixDialog(Logbook::Ptr logbook, QWidget * parent)
-	: m_session(logbook->session()), m_dsTanks(new DefaultDataSource<Tank>), m_dsMixes(new DefaultDataSource<Mix>)
+TanksMixDialog::TanksMixDialog(Session::Ptr session, QWidget * parent)
+	: m_session(session), m_dsTanks(new DefaultDataSource<Tank>), m_dsMixes(new DefaultDataSource<Mix>)
 {
 	m_mdlMixes = new MixModel;
 	m_mdlTanks = new TankModel;
@@ -72,6 +72,8 @@ TanksMixDialog::TanksMixDialog(Logbook::Ptr logbook, QWidget * parent)
 	m_dwmTanks->addMapping(m_txtPressure, 2);
 	m_dwmTanks->addMapping(m_txtVolume, 3);
 	m_dwmTanks->addMapping(m_txtCapacity, 4);
+
+	setWindowTitle(tr("Manage Tanks and Mixes"));
 }
 
 TanksMixDialog::~TanksMixDialog()

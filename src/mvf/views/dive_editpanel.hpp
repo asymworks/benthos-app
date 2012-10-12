@@ -130,6 +130,7 @@ private:
 	QuantityEdit *		m_txtAirStart;
 	QuantityEdit *		m_txtAirEnd;
 	QComboBox *			m_cbxMix;
+	QComboBox *			m_cbxTank;
 
 	QCheckBox *			m_chkStop;
 	QuantityEdit *		m_txtStopDepth;
@@ -156,6 +157,7 @@ private:
 	QAbstractItemModel *	m_SiteFKModel;
 	QAbstractItemModel *	m_ComputerFKModel;
 	QAbstractItemModel *	m_MixFKModel;
+	QAbstractItemModel *	m_TankFKModel;
 
 	QAbstractListModel *	m_TagsModel;
 

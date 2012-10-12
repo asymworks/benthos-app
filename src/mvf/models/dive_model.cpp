@@ -132,6 +132,25 @@ DiveModel::DiveModel(QObject * parent)
 	ADD_OPTIONAL_COLUMN(std::string, visibility_category, setVisibilityCategory, "Visibility Category", NULL, true);
 	ADD_OPTIONAL_COLUMN(double, visibility_distance, setVisibilityDistance, "Visibility Distance", new DelegateFactory<DepthDelegate>, true);
 	ADD_OPTIONAL_COLUMN(double, weight, setWeight, "Weight", new DelegateFactory<WeightDelegate>, true);
+
+	m_columns.push_back(new ModelColumn<LogbookQueryModel::model_type>(
+		new ForeignKeyAdapter<LogbookQueryModel::model_type, Tank>(
+			& LogbookQueryModel::model_type::tank,
+			& LogbookQueryModel::model_type::setTank,
+			& LogbookQueryModel::model_type::setTank
+		), "fk_tank", "", NULL, true, true
+	));
+
+	m_columns.push_back(new ModelColumn<LogbookQueryModel::model_type>(
+		new ForeignKeyWrapper<LogbookQueryModel::model_type, Tank, std::string>(
+			& LogbookQueryModel::model_type::tank,
+			new DefaultFieldAdapter<Tank, std::string>(
+				& Tank::name,
+				& Tank::setName,
+				& Tank::setName
+			)
+		), "tank", "Primary Tank"
+	));
 }
 
 DiveModel::~DiveModel()

@@ -170,6 +170,8 @@ public:
 		m_source = source;
 		if (m_source)
 			resetFromList(m_source->getItems(m_session));
+		else
+			resetFromList(std::vector<boost::shared_ptr<T> >());
 	}
 
 	//! Reload the Items

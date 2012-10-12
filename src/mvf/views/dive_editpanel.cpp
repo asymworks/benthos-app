@@ -110,12 +110,40 @@ protected:
 	}
 };
 
+class TankFKModel: public ForeignKeyModel<Tank>
+{
+public:
+	TankFKModel() { }
+	virtual ~TankFKModel() { }
+
+protected:
+	virtual QVariant decorationData(Tank::Ptr item) const
+	{
+		return QVariant();
+	}
+
+	virtual QVariant displayData(Tank::Ptr item) const
+	{
+		if (! item)
+			return QVariant();
+
+		if (item->name())
+			return QString::fromStdString(item->name().get());
+
+		return QString("%1 L/%2 cu ft %3")
+			.arg(item->volume(), 0, ' ', 1)
+			.arg(convertFromNative(qtVolume, "cu ft", item->capacity()), 0, ' ', 1)
+			.arg(item->type() ? (item->type().get() == "steel" ? "Steel Tank" : "Aluminum Tank") : "Tank");
+	}
+};
+
 DiveEditPanel::DiveEditPanel(QWidget * parent)
 	: QTabWidget(parent), m_mapper(NULL), m_session()
 {
 	m_SiteFKModel = new DiveSiteFKModel;
 	m_ComputerFKModel = new DiveComputerFKModel;
 	m_MixFKModel = new MixFKModel;
+	m_TankFKModel = new TankFKModel;
 
 	createDivePage();
 	createExtraPage();
@@ -191,12 +219,16 @@ void DiveEditPanel::bind(Session::Ptr session, QDataWidgetMapper * mapper)
 	mapper->addMapping(m_txtVizDistance, 32);
 	mapper->addMapping(m_txtWeight, 33);
 
+	mapper->addMapping(m_cbxTank, 34);
+
 	((ForeignKeyModel<DiveSite> *)m_SiteFKModel)->bind(session);
 	((ForeignKeyModel<DiveComputer> *)m_ComputerFKModel)->bind(session);
 	((ForeignKeyModel<Mix> *)m_MixFKModel)->bind(session);
+	((ForeignKeyModel<Tank> *)m_TankFKModel)->bind(session);
 
 	((QSortFilterProxyModel *)m_cbxSite->model())->sort(0, Qt::AscendingOrder);
 	((QSortFilterProxyModel *)m_cbxMix->model())->sort(0, Qt::AscendingOrder);
+	((QSortFilterProxyModel *)m_cbxTank->model())->sort(0, Qt::AscendingOrder);
 	((QSortFilterProxyModel *)m_cbxComputer->model())->sort(0, Qt::AscendingOrder);
 }
 
@@ -390,6 +422,16 @@ void DiveEditPanel::createDivePage()
 	QLabel * lblMix = new QLabel(tr("Gas Mix"), m_pgDive);
 	lblMix->setBuddy(m_cbxMix);
 
+	QSortFilterProxyModel * pmdl_tank = new QSortFilterProxyModel(m_pgDive);
+	pmdl_tank->setDynamicSortFilter(true);
+	pmdl_tank->setSortCaseSensitivity(Qt::CaseInsensitive);
+	pmdl_tank->setSourceModel(m_TankFKModel);
+
+	m_cbxTank = new QComboBox(m_pgDive);
+	m_cbxTank->setModel(pmdl_tank);
+	QLabel * lblTank = new QLabel(tr("Tank"), m_pgDive);
+	lblTank->setBuddy(m_cbxTank);
+
 	QGridLayout * gbox3 = new QGridLayout();
 	gbox3->setContentsMargins(0, 0, 0, 0);
 	gbox3->addWidget(lblMaxDepth, 0, 0);
@@ -408,8 +450,10 @@ void DiveEditPanel::createDivePage()
 	gbox3->addWidget(m_txtAirStart, 4, 0);
 	gbox3->addWidget(lblAirEnd, 3, 1);
 	gbox3->addWidget(m_txtAirEnd, 4, 1);
-	gbox3->addWidget(lblMix, 3, 4, 1, 2);
-	gbox3->addWidget(m_cbxMix, 4, 4, 1, 2);
+	gbox3->addWidget(lblMix, 3, 4);
+	gbox3->addWidget(m_cbxMix, 4, 4);
+	gbox3->addWidget(lblTank, 3, 5);
+	gbox3->addWidget(m_cbxTank, 4, 5);
 
 	QVBoxLayout * vbox = new QVBoxLayout();
 	vbox->addLayout(gbox1);

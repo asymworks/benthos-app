@@ -106,7 +106,7 @@ void MainWindow::actDeleteItemsTriggered()
 
 void MainWindow::actManageTanksMixesTriggered()
 {
-	TanksMixDialog dlg(m_Logbook, this);
+	TanksMixDialog dlg(m_Logbook->session(), this);
 	dlg.exec();
 }
 

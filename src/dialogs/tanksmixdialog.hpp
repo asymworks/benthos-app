@@ -62,10 +62,10 @@ public:
 
 	/**
 	 * @brief Class Constructor
-	 * @param[in] Logbook
+	 * @param[in] Session
 	 * @param[in] Parent Widget
 	 */
-	TanksMixDialog(Logbook::Ptr logbook, QWidget * parent = 0);
+	TanksMixDialog(Session::Ptr session, QWidget * parent = 0);
 
 	//! Class Destructor
 	virtual ~TanksMixDialog();
