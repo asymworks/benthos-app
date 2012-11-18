@@ -35,7 +35,7 @@
 
 pkgname=benthos
 pkgver=0.1.0
-pkgrel=1
+pkgrel=2
 pkgdesc="Benthos Scuba Logbook"
 arch=('i686' 'x86_64')
 license=('GPL2')
@@ -47,7 +47,7 @@ conflicts=()
 replaces=()
 backup=()
 source=("http://benthos-log.com/files/${pkgname}-${pkgver}.tar.bz2")
-md5sums=('6027f179772be88c8b5222fa42736824')
+md5sums=('cc749730190e72ae572eb4761598d930')
 
 build() {
 	cd "${srcdir}/${pkgname}-${pkgver}"

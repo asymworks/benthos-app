@@ -46,7 +46,9 @@ void ChromePage::javaScriptConsoleMessage(const QString & message, int lineNumbe
 
 QString ChromePage::userAgentForUrl(const QUrl & url) const
 {
-	return QString("Chrome/5.0");
+	// Broken as of October 2012, but now default works?
+	//return QString("Chrome/1.0");
+	return QWebPage::userAgentForUrl(url);
 }
 
 MapLocationEditor::MapLocationEditor(QWidget * parent)
