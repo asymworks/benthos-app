@@ -39,6 +39,7 @@ set( BENTHOS_SRCS
 	controls/tileview.cpp
 	controls/tileviewsorter.cpp
 	controls/wizardcombobox.cpp
+	dialogs/aboutdialog.cpp
 	dialogs/driverparamsdialog.cpp
 	dialogs/modeladddialog.cpp
 	dialogs/modeleditdialog.cpp
@@ -98,6 +99,7 @@ set( BENTHOS_MOC_HDRS
 	controls/tileview.hpp
 	controls/tileviewsorter.hpp
 	controls/wizardcombobox.hpp
+	dialogs/aboutdialog.hpp
 	dialogs/driverparamsdialog.hpp
 	dialogs/modeladddialog.hpp
 	dialogs/modeleditdialog.hpp

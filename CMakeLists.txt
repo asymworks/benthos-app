@@ -29,9 +29,14 @@ project( benthos )
 # Application Version Information
 set(BENTHOS_MAJOR_VERSION 0)
 set(BENTHOS_MINOR_VERSION 1)
-set(BENTHOS_PATCH_VERSION 0)
+set(BENTHOS_PATCH_VERSION 1)
 set(BENTHOS_VERSION
 	${BENTHOS_MAJOR_VERSION}.${BENTHOS_MINOR_VERSION}.${BENTHOS_PATCH_VERSION})
+
+# Application Name/Copyright Info
+set(BENTHOS_APP_TITLE "Benthos")
+set(BENTHOS_ORG_TITLE "Asymworks, LLC")
+set(BENTHOS_COPYRIGHT "Copyright (c) 2011-2013 Asymworks, LLC.  All Rights Reserved.")
 
 # Qt Settings Information
 set(BENTHOS_APP_NAME benthos)

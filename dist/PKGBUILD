@@ -46,11 +46,14 @@ makedepends=('cmake' 'boost')
 conflicts=()
 replaces=()
 backup=()
-source=("http://benthos-log.com/files/${pkgname}-${pkgver}.tar.bz2")
-md5sums=('cc749730190e72ae572eb4761598d930')
+source=("http://benthos-log.com/files/${pkgname}-${pkgver}.tar.bz2"
+	"fix_mapsapi.patch")
+md5sums=('cc749730190e72ae572eb4761598d930'
+	'9163694ddbf75b0bc087530562e83e2f')
 
 build() {
 	cd "${srcdir}/${pkgname}-${pkgver}"
+	patch -p1 -i ${srcdir}/fix_mapsapi.patch
 	[[ -d build ]] && rm -r build
 	mkdir build && cd build
 	cmake -DCMAKE_INSTALL_PREFIX:PATH=/usr .. || return 1

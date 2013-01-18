@@ -133,6 +133,8 @@ private slots:
 	void actRenumberTriggered();
 	void actManageTanksMixesTriggered();
 
+	void actAboutTriggered();
+
 	void navTreeSelectionChanged(const QModelIndex &, const QModelIndex &);
 	void txtFilterChanged(const QString &);
 	void viewModeChanged(int);
@@ -154,6 +156,8 @@ private:
 	QAction *				m_actRenumber;
 	QAction *				m_actManageTanksMixes;
 
+	QAction *				m_actAbout;
+
 	QAction *				m_actViewCF;
 	QAction *				m_actViewTiled;
 	QAction *				m_actViewList;
@@ -169,6 +173,7 @@ private:
 
 	QMenu *					m_fileMenu;
 	QMenu *					m_logbookMenu;
+	QMenu *					m_helpMenu;
 	QMenu *					m_unitMenu;
 
 	NavTree *				m_navTree;

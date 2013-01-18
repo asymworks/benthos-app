@@ -40,6 +40,7 @@
 #include "util/qticonloader.hpp"
 #include "util/units.hpp"
 
+#include "dialogs/aboutdialog.hpp"
 #include "dialogs/modeladddialog.hpp"
 #include "dialogs/modeleditdialog.hpp"
 #include "dialogs/tanksmixdialog.hpp"
@@ -86,6 +87,12 @@ MainWindow::MainWindow(QWidget * parent)
 
 MainWindow::~MainWindow()
 {
+}
+
+void MainWindow::actAboutTriggered()
+{
+	AboutDialog dlg(this);
+	dlg.exec();
 }
 
 void MainWindow::actCloseLogbookTriggered()
@@ -449,6 +456,9 @@ void MainWindow::createActions()
 	m_actExit->setStatusTip(tr("Exit the Benthos Application"));
 	connect(m_actExit, SIGNAL(triggered()), this, SLOT(close()));
 
+	/*
+	 * Logbook Menu Actions
+	 */
 	m_actNewComputer = new QAction(tr("New Dive &Computer..."), this);
 	m_actNewComputer->setStatusTip(tr("Add a new Dive Computer"));
 	connect(m_actNewComputer, SIGNAL(triggered()), this, SLOT(actNewComputerTriggered()));
@@ -477,6 +487,13 @@ void MainWindow::createActions()
 	m_actManageTanksMixes = new QAction(tr("Manage &Tanks and Mixes..."), this);
 	m_actManageTanksMixes->setStatusTip(tr("Manage Tanks and Breathing Mixes in the Logbook"));
 	connect(m_actManageTanksMixes, SIGNAL(triggered()), this, SLOT(actManageTanksMixesTriggered()));
+
+	/*
+	 * Help Menu Actions
+	 */
+	m_actAbout = new QAction(tr("About Benthos"), this);
+	m_actAbout->setStatusTip(tr("Show information about Benthos"));
+	connect(m_actAbout, SIGNAL(triggered()), this, SLOT(actAboutTriggered()));
 
 	/*
 	 * Toolbar Actions
@@ -650,6 +667,9 @@ void MainWindow::createMenus()
 	m_logbookMenu->addAction(m_actRenumber);
 	m_logbookMenu->addSeparator();
 	m_logbookMenu->addAction(m_actManageTanksMixes);
+
+	m_helpMenu = menuBar()->addMenu(tr("&Help"));
+	m_helpMenu->addAction(m_actAbout);
 
 	m_unitMenu = new QMenu(tr("Display &Units"));
 	m_unitMenu->addAction(m_actSetMetric);
