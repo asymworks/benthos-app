@@ -396,21 +396,21 @@ void LogbookModel::setLogbook(Logbook::Ptr logbook)
 
 void LogbookModel::site_deleted(AbstractMapper::Ptr m, Persistent::Ptr obj)
 {
-	DiveSite::Ptr ds = boost::shared_polymorphic_downcast<DiveSite>(obj);
+	DiveSite::Ptr ds = boost::dynamic_pointer_cast<DiveSite>(obj);
 	if (! ds || ! (ds->country_().is_initialized()))
 		return;
 }
 
 void LogbookModel::site_inserted(AbstractMapper::Ptr, Persistent::Ptr obj)
 {
-	DiveSite::Ptr ds = boost::shared_polymorphic_downcast<DiveSite>(obj);
+	DiveSite::Ptr ds = boost::dynamic_pointer_cast<DiveSite>(obj);
 	if (! ds)
 		return;
 }
 
 void LogbookModel::site_updated(AbstractMapper::Ptr, Persistent::Ptr obj)
 {
-	DiveSite::Ptr ds = boost::shared_polymorphic_downcast<DiveSite>(obj);
+	DiveSite::Ptr ds = boost::dynamic_pointer_cast<DiveSite>(obj);
 	if (! ds)
 		return;
 }

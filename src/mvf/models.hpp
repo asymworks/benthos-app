@@ -38,6 +38,13 @@
 
 #include "modelcolumn.hpp"
 
+/*
+ * FIX for broken Qt4 moc and BOOST_JOIN error
+ */
+#ifdef Q_MOC_RUN
+#define BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
+#endif
+
 #include <benthos/logbook/mapper.hpp>
 #include <benthos/logbook/persistent.hpp>
 #include <benthos/logbook/session.hpp>
@@ -182,7 +189,7 @@ public:
 
 		if (items.size() > 0)
 		{
-			Persistent::Ptr pobj = boost::shared_polymorphic_cast<Persistent>(items[0]);
+			Persistent::Ptr pobj = boost::dynamic_pointer_cast<Persistent>(items[0]);
 			if (pobj)
 				m_evtAttrSet = pobj->events().attr_set.connect(boost::bind(& LogbookQueryModel<T>::evtAttrSet, this, _1, _2, _3));
 		}

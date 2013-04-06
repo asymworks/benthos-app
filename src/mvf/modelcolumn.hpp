@@ -35,6 +35,13 @@
 
 #include "modelif.hpp"
 
+/*
+ * FIX for broken Qt4 moc and BOOST_JOIN error
+ */
+#ifdef Q_MOC_RUN
+#define BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
+#endif
+
 #include <benthos/logbook/session.hpp>
 
 using namespace benthos::logbook;

@@ -36,6 +36,13 @@
 #include <QObject>
 #include <QRunnable>
 
+/*
+ * FIX for broken Qt4 moc and BOOST_JOIN error
+ */
+#ifdef Q_MOC_RUN
+#define BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
+#endif
+
 #include <benthos/divecomputer/driver.hpp>
 
 #include <benthos/logbook/dive_computer.hpp>

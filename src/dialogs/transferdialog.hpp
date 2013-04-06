@@ -36,6 +36,13 @@
 #include <QProgressBar>
 #include <QRunnable>
 
+/*
+ * FIX for broken Qt4 moc and BOOST_JOIN error
+ */
+#ifdef Q_MOC_RUN
+#define BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
+#endif
+
 #include <benthos/logbook/profile.hpp>
 
 using namespace benthos::logbook;
