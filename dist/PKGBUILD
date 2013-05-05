@@ -35,12 +35,12 @@
 
 pkgname=benthos
 pkgver=0.1.0
-pkgrel=2
+pkgrel=3
 pkgdesc="Benthos Scuba Logbook"
 arch=('i686' 'x86_64')
 license=('GPL2')
 url="http://benthos-log.net"
-depends=('boost-libs' 'systemd' 'benthos-logbook' 'benthos-dc' 'qt>=4.8')
+depends=('boost-libs' 'systemd' 'benthos-logbook' 'benthos-dc' 'qt4>=4.8')
 optdepends=()
 makedepends=('cmake' 'boost')
 conflicts=()

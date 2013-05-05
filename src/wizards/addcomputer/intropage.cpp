@@ -305,9 +305,19 @@ bool IntroPage::validatePage()
 
 	if (dev)
 	{
-		m_txtSerial->setText(QString("%1").arg(dev->serial_number()));
-		m_txtManuf->setText(QString::fromStdString(dev->manufacturer()));
-		m_txtModel->setText(QString::fromStdString(dev->model_name()));
+		uint8_t model_ = dev->model_number();
+		uint32_t serial_ = dev->serial_number();
+
+		if (model_ != (uint8_t)(-1))
+		{
+			m_txtManuf->setText(QString::fromStdString(dev->manufacturer(model_)));
+			m_txtModel->setText(QString::fromStdString(dev->model_name(model_)));
+		}
+
+		if (serial_ != (uint32_t)(-1))
+		{
+			m_txtSerial->setText(QString("%1").arg(serial_));
+		}
 	}
 
 	return QWizardPage::validatePage();

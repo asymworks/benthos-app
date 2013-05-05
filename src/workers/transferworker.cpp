@@ -113,6 +113,31 @@ std::string json_encode(const vendor_data_t & data)
 	return result;
 }
 
+int device_info(void * userdata, uint8_t model, uint32_t serial, uint32_t ticks, char ** token, int * free_token)
+{
+	TransferWorker * worker = static_cast<TransferWorker *>(userdata);
+	if (! worker)
+		return -1;
+
+	std::string token_;
+	int ret = worker->driver_devinfo(model, serial, ticks, token_);
+	if (ret)
+		return ret;
+
+	if (token_.size())
+	{
+		(* token) = strdup(token_.c_str());
+		(* free_token) = 1;
+	}
+	else
+	{
+		(* token) = NULL;
+		(* free_token) = 0;
+	}
+
+	return 0;
+}
+
 void parse_header(void * userdata, uint8_t token, int32_t value, uint8_t index, const char * name)
 {
 	time_t st;
@@ -363,7 +388,8 @@ void parse_profile(void * userdata, uint8_t token, int32_t value, uint8_t index,
 }
 
 TransferWorker::TransferWorker(DiveComputer::Ptr dc, Session::Ptr session, bool checkSerNo, bool updateToken, QObject * parent)
-	: QObject(parent), m_dc(dc), m_session(session), m_checkSN(checkSerNo), m_updateToken(updateToken), m_cancel(false)
+	: QObject(parent), m_dc(dc), m_session(session), m_checkSN(checkSerNo), m_updateToken(updateToken),
+	  m_cancel(false), m_started(false)
 {
 }
 
@@ -381,8 +407,56 @@ bool TransferWorker::cancelled() const
 	return m_cancel;
 }
 
+int TransferWorker::driver_devinfo(uint8_t model, uint32_t serial, uint32_t ticks, std::string & token)
+{
+	QString dcname;
+	if (m_dc->name().is_initialized())
+		dcname = QString::fromStdString(m_dc->name().get());
+	else
+		dcname = QString("'%1' Device").arg(QString::fromStdString(m_dc->driver()));
+
+	char buf1[255];
+	char buf2[255];
+
+	sprintf(buf1, "%u", serial);
+	sprintf(buf2, "%u", (uint32_t)(-1));
+
+	// Validate Serial Number
+	if ((m_checkSN || (m_dc->serial() != buf2)) && (m_dc->serial() != buf1))
+	{
+		emit transferError(QString("Serial number did not match with '%1': Got serial number %2")
+			.arg(dcname)
+			.arg(QString::fromAscii(buf1, strlen(buf1))));
+		return -1;
+	}
+
+	// Set the Transfer Token
+	if (m_dc->token().is_initialized() && ! m_dc->token().get().empty())
+		token = m_dc->token().get();
+
+	// Continue Transfer
+	return 0;
+}
+
 void TransferWorker::driver_progress(uint32_t transferred, uint32_t total)
 {
+	if (! m_started)
+	{
+		if (! total)
+		{
+			emit started(0);
+			emit status(QString("No data to transfer"));
+			emit finished();
+		}
+		else
+		{
+			emit status(QString("Transferring %1 bytes").arg(total));
+			emit started(total);
+		}
+
+		m_started = true;
+	}
+
 	emit progress(transferred);
 }
 
@@ -421,7 +495,7 @@ void TransferWorker::parse_dives(Driver::Ptr driver, const dive_data_t & dives)
 		data.curmix = air;
 
 		// Parse the Header and Profile
-		driver->parse(* it, & parse_header, & parse_profile, & data);
+		driver->parse(it->first, & parse_header, & parse_profile, & data);
 
 		// Append the final Waypoint
 		if (data.haswp)
@@ -440,7 +514,7 @@ void TransferWorker::parse_dives(Driver::Ptr driver, const dive_data_t & dives)
 		profile->setDive(data.dive);
 		profile->setImported(time(NULL));
 		profile->setProfile(data.profile);
-		profile->setRawProfile(* it);
+		profile->setRawProfile(it->first);
 		profile->setVendor(json_encode(data.vendor));
 
 		// Emit Parsed Dive
@@ -450,6 +524,7 @@ void TransferWorker::parse_dives(Driver::Ptr driver, const dive_data_t & dives)
 
 void TransferWorker::run()
 {
+	dive_data_t dive_data;
 	QString dcname;
 	if (m_dc->name().is_initialized())
 		dcname = QString::fromStdString(m_dc->name().get());
@@ -480,7 +555,15 @@ void TransferWorker::run()
 	// Connect to the Device
 	try
 	{
-		dev = dclass->open("", "");
+		std::string devpath;
+		std::string devargs;
+
+		if (m_dc->device().is_initialized())
+			devpath = m_dc->device().get();
+		if (m_dc->driver_args().is_initialized())
+			devargs = m_dc->driver_args().get();
+
+		dev = dclass->open(devpath, devargs);
 	}
 	catch (std::exception & e)
 	{
@@ -492,59 +575,35 @@ void TransferWorker::run()
 
 	emit status(QString("Connected to '%1'").arg(dcname));
 
-	// Validate Serial Number
-	char buf[255];
-	sprintf(buf, "%u", dev->serial_number());
-
-	if (m_checkSN && (m_dc->serial() != buf))
-	{
-		emit transferError(QString("Serial number did not match with '%1': Got serial number %2")
-			.arg(dcname)
-			.arg(QString::fromAscii(buf, strlen(buf))));
-		return;
-	}
-
-	// Set the Transfer Token
-	if (m_dc->token() && ! m_dc->token().get().empty())
-		dev->set_token(m_dc->token().get());
-
-	// Get the Transfer Length
-	uint32_t len = dev->transfer_length();
-	if (! len)
-	{
-		emit started(0);
-		emit status(QString("No data to transfer"));
-		emit finished();
-
-		return;
-	}
-
-	// Allocate storage for transferred data
-	dive_data_t dive_data;
-
 	// Transfer Data
-	emit status(QString("Transferring %1 bytes").arg(len));
-	emit started(len);
-
 	try
 	{
-		dive_data = dev->transfer(& transfer_callback_fn, this);
+		dive_data = dev->transfer(& device_info, & transfer_callback_fn, this);
 	}
 	catch (std::exception & e)
 	{
-
-
 		emit transferError(QString::fromStdString(e.what()));
 		return;
 	}
 
-	// Store new Token
-	if (m_updateToken)
-		m_dc->setToken(dev->issue_token());
+	// No guarantee that transfer_callback_fn is called
+	if (! m_started)
+	{
+		emit started(0);
+		emit status(QString("No data to transfer"));
+		emit finished();
+	}
 
-	// Parse Data
-	emit status(QString("Parsing %1 dives").arg(dive_data.size()));
-	parse_dives(dev, dive_data);
+	if (dive_data.size())
+	{
+		// Store new Token
+		if (m_updateToken)
+			m_dc->setToken(dive_data.back().second);
+
+		// Parse Data
+		emit status(QString("Parsing %1 dives").arg(dive_data.size()));
+		parse_dives(dev, dive_data);
+	}
 
 	emit status(QString("Transfer Successful"));
 	emit finished();

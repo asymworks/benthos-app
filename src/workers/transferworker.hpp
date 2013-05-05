@@ -52,8 +52,9 @@
 using namespace benthos::dc;
 using namespace benthos::logbook;
 
-typedef std::vector<uint8_t>		dive_buffer_t;
-typedef std::list<dive_buffer_t>	dive_data_t;
+typedef std::vector<uint8_t>					dive_buffer_t;
+typedef std::pair<dive_buffer_t, std::string>	dive_entry_t;
+typedef std::list<dive_entry_t>					dive_data_t;
 
 /**
  * @brief Dive Computer Transfer Worker
@@ -190,6 +191,9 @@ public:
 	//! @internal Do not call from client code
 	void driver_progress(uint32_t transferred, uint32_t total);
 
+	//! @internal Do not call from client code
+	int driver_devinfo(uint8_t model, uint32_t serial, uint32_t ticks, std::string &);
+
 protected:
 
 	//! Parse Dive Data
@@ -202,6 +206,7 @@ private:
 	bool						m_checkSN;
 	bool						m_updateToken;
 	bool						m_cancel;
+	bool						m_started;
 
 };
 
